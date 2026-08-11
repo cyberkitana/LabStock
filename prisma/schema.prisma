@@ -13,177 +13,113 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-
-  accounts Account[]
-  sessions Session[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
 }
 
 model Account {
-  id String @id @default(cuid())
-
+  id                String @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-
-  user User @relation(fields: [userId], references: [id])
+  user              User   @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id String @id @default(cuid())
-
-  sessionToken String @unique
-
-  userId String
-
-  expires DateTime
-
-  user User @relation(fields: [userId], references: [id])
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
 }
 
 model VerificationToken {
   identifier String
-
-  token String @unique
-
-  expires DateTime
+  token      String   @unique
+  expires    DateTime
 
   @@unique([identifier, token])
 }
 
-// =========================
-// INVENTORY
-// =========================
-
 model InventoryItem {
-  id String @id @default(cuid())
-
-  name String
-
-  description String?
-
-  quantity Int @default(0)
-
-  minimumStock Int @default(5)
-
-  unit String @default("Unit")
-
-  specific String?
-
-  batchNumber String?
-
-  expiryDate DateTime?
-
-  categoryId String?
-
-  supplierId String?
-
-  storageId String?
-  category  Category? @relation(fields: [categoryId], references: [id])
-
-  supplier Supplier? @relation(fields: [supplierId], references: [id])
-
-  storage StorageLocation?  @relation(fields: [storageId], references: [id])
-  records InventoryRecord[]
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
+  id           String            @id @default(cuid())
+  name         String
+  description  String?
+  quantity     Int               @default(0)
+  minimumStock Int               @default(5)
+  unit         String            @default("Unit")
+  specific     String?
+  batchNumber  String?
+  expiryDate   DateTime?
+  categoryId   String?
+  supplierId   String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  supplier     Supplier?         @relation(fields: [supplierId], references: [id])
+  category     Category?         @relation(fields: [categoryId], references: [id])
+  records      InventoryRecord[]
+  locations    ItemLocation[]
 }
 
 model InventoryRecord {
-  id String @id @default(cuid())
-
-  itemId String
-
-  item InventoryItem @relation(fields: [itemId], references: [id])
-
-  type String
-
-  quantity Int
-
+  id               String        @id @default(cuid())
+  itemId           String
+  type             String
+  quantity         Int
   previousQuantity Int?
-
-  newQuantity Int?
-
-  reason String?
-
-  createdAt DateTime @default(now())
+  newQuantity      Int?
+  reason           String?
+  createdAt        DateTime      @default(now())
+  item             InventoryItem @relation(fields: [itemId], references: [id])
 }
-
-// =========================
-// CATEGORY / FLASK SYSTEM
-// =========================
 
 model Category {
-  id String @id @default(cuid())
-
-  name String @unique
-
-  colour String @default("#3B82F6")
-
-  items InventoryItem[]
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
+  id        String          @id @default(cuid())
+  name      String          @unique
+  colour    String          @default("#3B82F6")
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  items     InventoryItem[]
 }
-
-// =========================
-// SUPPLIER FILE SYSTEM
-// =========================
 
 model Supplier {
-  id String @id @default(cuid())
-
-  name String @unique
-
-  contact String?
-
-  email String?
-
-  phone String?
-
-  website String?
-
-  items InventoryItem[]
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
+  id        String          @id @default(cuid())
+  name      String          @unique
+  contact   String?
+  email     String?
+  phone     String?
+  logo      String?
+  website   String?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  items     InventoryItem[]
 }
 
-// =========================
-// FREEZER / STORAGE SYSTEM
-// =========================
-
 model StorageLocation {
-  id String @id @default(cuid())
-
-  name String @unique
-
-  type String?
-  // Example:
-  // Freezer
-  // Fridge
-  // Shelf
-  // Room
-
+  id          String         @id @default(cuid())
+  name        String         @unique
+  type        String?
   temperature String?
-  // Example:
-  // -80°C
-  // -20°C
-  // 4°C
-  // Room temperature
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  items       ItemLocation[]
+}
 
-  items InventoryItem[]
-
+model ItemLocation {
+  id        String   @id @default(cuid())
+  itemId    String
+  storageId String
+  quantity  Int      @default(0)
+  opened    Boolean?
   createdAt DateTime @default(now())
 
-  updatedAt DateTime @updatedAt
+  storage StorageLocation @relation(fields: [storageId], references: [id], onDelete: Cascade)
+  item    InventoryItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, storageId, opened])
 }

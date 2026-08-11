@@ -1,0 +1,2 @@
+-- ItemLocation already exists in the database.
+-- This migration records the schema change in migration history.
