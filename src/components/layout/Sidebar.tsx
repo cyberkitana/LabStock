@@ -49,21 +49,19 @@ export default function Sidebar() {
 
   return (
 
-    <aside
-
-      className="
-      flex
-      min-h-screen
-      w-72
-      flex-col
-      bg-slate-950
-      px-6
-      py-8
-      text-white
-      "
-
-    >
-
+    <aside className="
+fixed
+left-0
+top-0
+h-screen
+w-72
+flex
+flex-col
+bg-slate-950
+px-6
+py-8
+text-white
+">
 
       {/* Logo */}
 
@@ -195,45 +193,8 @@ export default function Sidebar() {
 
       >
 
-        <Link
-
-          href="/settings"
-
-          className="
-          flex
-          items-center
-          gap-3
-          rounded-xl
-          px-4
-          py-3
-          text-slate-300
-          transition
-          hover:bg-slate-800
-          hover:text-white
-          "
-
-        >
-
-          <Settings size={20} />
-
-
-          <span
-
-            className="
-            text-sm
-            font-medium
-            "
-
-          >
-
-            Settings
-
-          </span>
-
-
-        </Link>
-
-
+    
+      
       </div>
 
 

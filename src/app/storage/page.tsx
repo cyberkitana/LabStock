@@ -8,17 +8,19 @@ export default async function StoragePage(){
 
   const storageLocations = await prisma.storageLocation.findMany({
 
-    orderBy:{
-
-      name:"asc"
-
+  include:{
+    items:{
+      include:{
+        item:true
+      }
     }
+  },
 
-  });
+  orderBy:{
+    name:"asc"
+  }
 
-
-
-
+});
 
   return (
 
@@ -67,14 +69,14 @@ export default async function StoragePage(){
             <h1
 
               className="
-              text-3xl
+              text-2xl
               font-bold
               text-gray-800
               "
 
             >
 
-              Storage Locations
+              Laboratory Storage Locations
 
             </h1>
 
@@ -89,7 +91,7 @@ export default async function StoragePage(){
 
             >
 
-              Manage freezer, fridge and laboratory storage locations
+        
 
             </p>
 

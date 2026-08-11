@@ -40,60 +40,47 @@ export default async function LabRoomPage() {
 
   <main
 
-    className="
-    min-h-screen
-    bg-gray-50
-    p-8
-    "
+  className="
+  h-screen
+  overflow-hidden
+  bg-gray-50
+  p-6
+  "
 
-  >
-
-
+>
     <div
 
-      className="
-      max-w-6xl
-      mx-auto
-      "
+  className="
+  max-w-6xl
+  h-full
+  mx-auto
+  flex
+  flex-col
+  "
 
-    >
-
-
+>
       {/* Page Header */}
 
       <div
 
         className="
-        mb-8
+        mb-15
         "
 
       >
-
-        <h1
-
-          className="
-          text-3xl
-          font-bold
-          text-gray-800
-          "
-
-        >
-
-          Manage My Lab
-
-        </h1>
 
 
         <p
 
           className="
           mt-1
-          text-gray-500
+          text-gray-1000
+          font-semibold
           "
 
         >
 
-          Manage storage locations, inventory categories, and suppliers
+          Manage your Storage Locations, Inventory Categories, and Suppliers
 
         </p>
 
@@ -106,15 +93,29 @@ export default async function LabRoomPage() {
 
       {/* Interactive Lab Room */}
 
-<LabRoom
+<div
 
-  storageLocations={storageLocations}
+  className="
+  flex-1
+  min-h-0
+  flex
+  items-center
+  justify-center
+  "
 
-  categories={categories}
+>
 
-  suppliers={suppliers}
+  <LabRoom
 
-/>
+    storageLocations={storageLocations}
+
+    categories={categories}
+
+    suppliers={suppliers}
+
+  />
+
+</div>
     </div>
 
 

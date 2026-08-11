@@ -6,12 +6,20 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
+    <div className="flex h-screen overflow-hidden">
 
-      <main className="flex-1 p-8">
-        {children}
-      </main>
-    </div>
+  <Sidebar />
+
+  <main className="
+    flex-1
+    overflow-y-auto
+    ml-72
+  ">
+
+    {children}
+
+  </main>
+
+</div>
   );
 }

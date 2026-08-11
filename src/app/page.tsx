@@ -2,6 +2,7 @@ import InventoryCard from "@/components/InventoryCard";
 import SupplierFiles from "@/components/SupplierFiles";
 import { prisma } from "@/lib/prisma";
 import { addInventoryItem } from "@/actions/inventory";
+import InventorySection from "@/components/InventorySection";
 
 
 export default async function HomePage() {
@@ -375,38 +376,7 @@ export default async function HomePage() {
       {/* INVENTORY CARDS */}
 
 
-      <section className="space-y-3">
-
-
-        <h2 className="text-xl font-semibold">
-          Inventory
-        </h2>
-
-
-
-        {
-          items.map((item)=>(
-
-            <InventoryCard
-
-              key={item.id}
-
-              item={item}
-
-              onEdit={()=>{}}
-
-            />
-
-
-          ))
-        }
-
-
-
-      </section>
-
-
-
+      <InventorySection items={items}/>
 
     </main>
 

@@ -3,28 +3,119 @@
 @import "shadcn/tailwind.css";
 
 
+/* =========================================================
+   LABSTOCK VISUAL SYSTEM
+   =========================================================
+
+   Typography
+   ----------
+   Space Grotesk = display / identity
+   Inter         = everyday interface text
+   IBM Plex Mono = scientific / technical data
+
+   The fonts are deliberately separated by purpose.
+
+   Space Grotesk should NOT become the default font
+   for the entire application.
+
+   Inter handles the dense UI.
+
+   IBM Plex Mono makes actual laboratory data
+   visually distinct from interface text.
+*/
+
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+
+/* =========================================================
+   DARK MODE VARIANT
+   ========================================================= */
+
 @custom-variant dark (&:is(.dark *));
 
 
+/* =========================================================
+   TAILWIND THEME
+   ========================================================= */
+
 @theme inline {
+
+  /* -----------------------------------------
+     TYPOGRAPHY
+     ----------------------------------------- */
+
+  --font-sans: var(--font-inter);
+
+  --font-heading: var(--font-space);
+
+  --font-mono: var(--font-plex-mono);
+
+
+  /* -----------------------------------------
+     CORE COLOURS
+     ----------------------------------------- */
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-inter);
-  --font-heading: var(--font-inter);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
 
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+
+  /* -----------------------------------------
+     SIDEBAR
+     ----------------------------------------- */
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
 
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
 
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+
+  /* -----------------------------------------
+     CHARTS
+     ----------------------------------------- */
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -32,29 +123,10 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
 
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-
+  /* -----------------------------------------
+     RADII
+     ----------------------------------------- */
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -63,10 +135,12 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-
 }
 
 
+/* =========================================================
+   LIGHT THEME
+   ========================================================= */
 
 :root {
 
@@ -104,10 +178,12 @@
   --chart-5: oklch(0.269 0 0);
 
   --radius: 0.625rem;
-
 }
 
 
+/* =========================================================
+   DARK THEME
+   ========================================================= */
 
 .dark {
 
@@ -137,10 +213,12 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
-
 }
 
 
+/* =========================================================
+   BASE STYLES
+   ========================================================= */
 
 @layer base {
 
@@ -148,14 +226,108 @@
     @apply border-border outline-ring/50;
   }
 
-
   body {
     @apply bg-background text-foreground;
-  }
 
+    /*
+      Inter is the default application font.
+
+      This means normal UI text automatically uses
+      Inter without needing a class everywhere.
+    */
+
+    font-family: var(--font-inter);
+  }
 
   html {
     @apply font-sans;
   }
 
+  /*
+    Headings use Space Grotesk.
+
+    This is intentionally limited to headings rather
+    than making the whole application use Space Grotesk.
+  */
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-space);
+  }
+}
+
+
+/* =========================================================
+   LABSTOCK TYPOGRAPHY UTILITIES
+   ========================================================= */
+
+/*
+  Display font
+
+  Use manually when something needs stronger
+  LabStock identity than a normal heading.
+
+  Example:
+
+  <div className="font-display">
+    LabStock
+  </div>
+*/
+
+.font-display {
+  font-family: var(--font-space);
+}
+
+
+/*
+  Technical data font
+
+  Use for actual scientific/inventory data.
+
+  Examples:
+
+  250 mL
+  LOT-24A91
+  TBX3-si-06
+  2027-04-18
+*/
+
+.font-data {
+  font-family: var(--font-plex-mono);
+}
+
+
+/*
+  Technical labels
+
+  Useful for small catalogue-style labels,
+  identifiers and metadata.
+*/
+
+.label-data {
+  font-family: var(--font-plex-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+
+/* =========================================================
+   LABSTOCK 3D / VISUAL UTILITIES
+   ========================================================= */
+
+.perspective {
+  perspective: 1000px;
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
 }

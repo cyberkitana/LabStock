@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useState } from "react";
 
 import {
@@ -8,155 +7,113 @@ import {
   updateStorageLocation,
   deleteStorageLocation
 } from "@/actions/storage";
-import { Trash2 } from "lucide-react";
+
+import {
+  Trash2,
+  Snowflake,
+  Refrigerator,
+  Package,
+  Plus,
+  X,
+  Pencil
+} from "lucide-react";
 
 
 type Props = {
-
   storageLocations:any[];
-
 };
 
 
 
-
-
-
-
 export default function StorageManager({
-
-storageLocations
-
+  storageLocations
 }:Props){
-
 
 
 const [editing,setEditing] =
 useState<any>(null);
 
-
-
 const [open,setOpen] =
 useState(false);
 
-
-
-
-
+const [expanded,setExpanded] =
+useState<string | null>(null);
 
 
 
 function openAdd(){
 
-setEditing(null);
-
-setOpen(true);
+  setEditing(null);
+  setOpen(true);
 
 }
-
-
-
-
-
 
 
 
 function openEdit(location:any){
 
-setEditing(location);
-
-setOpen(true);
-
-}
-
-
-
-
-
-
-
-
-async function submit(
-formData:FormData
-){
-
-
-if(editing){
-
-await updateStorageLocation(formData);
-
-
-}
-
-else{
-
-await createStorageLocation(formData);
-
-
-}
-
-
-
-setOpen(false);
-
-setEditing(null);
-
+  setEditing(location);
+  setOpen(true);
 
 }
 
 
 
 
+async function submit(formData:FormData){
 
+  if(editing){
+
+    await updateStorageLocation(formData);
+
+  }
+  else{
+
+    await createStorageLocation(formData);
+
+  }
+
+
+  setOpen(false);
+  setEditing(null);
+
+}
+
+
+
+
+function getIcon(type:string){
+
+
+  if(type === "Freezer")
+    return <Snowflake size={28}/>;
+
+
+  if(type === "Fridge")
+    return <Refrigerator size={28}/>;
+
+
+  return <Package size={28}/>;
+
+
+}
 
 
 
 
 return (
 
-<div className="space-y-6">
-
-
-
+<div className="space-y-8">
 
 
 {/* HEADER */}
 
-
-<div className="
-flex
-items-center
-justify-between
-">
+<div className="flex justify-between items-center">
 
 
 <div>
 
-<h2 className="
-text-xl
-font-bold
-text-gray-800
-">
-
-Storage Locations
-
-</h2>
-
-
-<p className="
-text-sm
-text-gray-500
-">
-
-Manage freezers, fridges, shelves and rooms
-
-</p>
-
-
 </div>
-
-
-
 
 
 <button
@@ -164,17 +121,21 @@ Manage freezers, fridges, shelves and rooms
 onClick={openAdd}
 
 className="
+flex
+items-center
+gap-2
 rounded-lg
 bg-blue-600
 px-4
 py-2
 text-white
-hover:bg-blue-700
 "
 
 >
 
-+ Add Storage
+<Plus size={18}/>
+
+Add Storage
 
 </button>
 
@@ -185,22 +146,16 @@ hover:bg-blue-700
 
 
 
-
-
-
-
-{/* FORM */}
-
+{/* ADD FORM */}
 
 {
-
 open &&
 
 <div className="
 rounded-xl
 border
 bg-gray-50
-p-5
+p-6
 ">
 
 
@@ -225,35 +180,17 @@ value={editing?.id ?? ""}
 
 
 
-
-
-
-<div>
-
-<label className="
-text-sm
-font-medium
-">
-
-Name
-
-</label>
-
-
 <input
 
 name="name"
 
 required
 
-defaultValue={
-editing?.name ?? ""
-}
+defaultValue={editing?.name ?? ""}
 
-placeholder="e.g. Main Cell Culture Fridge"
+placeholder="Storage name"
 
 className="
-mt-1
 w-full
 rounded-lg
 border
@@ -264,116 +201,52 @@ py-2
 />
 
 
-</div>
-
-
-
-
-
-
-
-
-
-
-<div>
-
-<label className="
-text-sm
-font-medium
-">
-
-Type
-
-</label>
-
 
 
 <select
 
 name="type"
 
-defaultValue={
-editing?.type ?? ""
-}
+defaultValue={editing?.type ?? ""}
 
 className="
-mt-1
 w-full
 rounded-lg
 border
-bg-white
 px-3
 py-2
 "
 
 >
 
-
 <option value="">
-
-Select type
-
+Type
 </option>
 
-
-<option value="Freezer">
-
+<option>
 Freezer
-
 </option>
 
-
-<option value="Fridge">
-
+<option>
 Fridge
-
 </option>
 
-
-<option value="Shelf">
-
+<option>
 Shelf
-
 </option>
 
-
-<option value="Room">
-
+<option>
 Room
-
 </option>
 
-
-<option value="Cabinet">
-
+<option>
 Cabinet
-
 </option>
 
 
 </select>
 
 
-</div>
-
-
-
-
-
-
-
-
-
-<div>
-
-<label className="
-text-sm
-font-medium
-">
-
-Temperature
-
-</label>
 
 
 
@@ -381,78 +254,38 @@ Temperature
 
 name="temperature"
 
-defaultValue={
-editing?.temperature ?? ""
-}
+defaultValue={editing?.temperature ?? ""}
 
 className="
-mt-1
 w-full
 rounded-lg
 border
-bg-white
 px-3
 py-2
 "
 
 >
 
-
 <option value="">
-
-Select temperature
-
+Temperature
 </option>
 
+<option>-80°C</option>
 
-<option value="-80°C">
+<option>-20°C</option>
 
--80°C
+<option>4°C</option>
 
-</option>
-
-
-<option value="-20°C">
-
--20°C
-
-</option>
-
-
-<option value="4°C">
-
-4°C
-
-</option>
-
-
-<option value="Room temperature">
-
-Room temperature
-
-</option>
-
+<option>Room temperature</option>
 
 
 </select>
 
 
-</div>
 
 
 
-
-
-
-
-
-
-
-<div className="
-flex
-justify-end
-gap-3
-">
+<div className="flex justify-end gap-3">
 
 
 <button
@@ -462,14 +295,13 @@ type="button"
 onClick={()=>{
 
 setOpen(false);
-
 setEditing(null);
 
 }}
 
 className="
-rounded-lg
 border
+rounded-lg
 px-4
 py-2
 "
@@ -482,11 +314,7 @@ Cancel
 
 
 
-
-
 <button
-
-type="submit"
 
 className="
 rounded-lg
@@ -498,28 +326,12 @@ text-white
 
 >
 
-{
-
-editing
-
-?
-
-"Update"
-
-:
-
-"Save"
-
-}
-
+Save
 
 </button>
 
 
-
 </div>
-
-
 
 
 
@@ -532,29 +344,45 @@ editing
 
 
 
- 
 
 
 
-
-
-
-
-
-{/* STORAGE CARDS */}
+{/* STORAGE MAP */}
 
 
 <div className="
 grid
 grid-cols-1
 md:grid-cols-2
-gap-4
+xl:grid-cols-3
+gap-5
 ">
 
 
 {
 
-storageLocations.map(location=>(
+storageLocations.map(location=>{
+
+
+const itemCount =
+location.items?.length ?? 0;
+
+
+const totalQuantity =
+location.items?.reduce(
+(sum:any,item:any)=>
+sum + item.quantity,
+0
+) ?? 0;
+
+
+
+const isOpen =
+expanded === location.id;
+
+
+
+return (
 
 
 <div
@@ -562,11 +390,18 @@ storageLocations.map(location=>(
 key={location.id}
 
 className="
-rounded-xl
+rounded-2xl
 border
 bg-white
-p-5
 shadow-sm
+overflow-hidden
+"
+
+>
+
+
+<div className="
+p-6
 "
 
 >
@@ -575,17 +410,40 @@ shadow-sm
 <div className="
 flex
 justify-between
-items-start
 "
 
 >
+
+
+<div className="
+flex
+gap-4
+items-center
+"
+
+
+>
+
+
+<div className="
+rounded-xl
+bg-blue-100
+p-3
+text-blue-700
+"
+
+>
+
+{getIcon(location.type)}
+
+</div>
 
 
 <div>
 
 
 <h3 className="
-font-semibold
+font-bold
 text-lg
 ">
 
@@ -594,18 +452,16 @@ text-lg
 </h3>
 
 
-
 <p className="
 text-sm
 text-gray-500
-mt-1
 ">
 
-{location.type ?? "No type"}
+{location.type ?? "Storage"}
 
 {" • "}
 
-{location.temperature ?? "No temperature"}
+{location.temperature ?? "-"}
 
 </p>
 
@@ -613,6 +469,8 @@ mt-1
 </div>
 
 
+</div>
+
 
 </div>
 
@@ -621,35 +479,198 @@ mt-1
 
 
 
+<div className="
+mt-5
+grid
+grid-cols-2
+gap-3
+"
 
+
+>
 
 <div className="
-mt-4
-flex
-gap-3
+rounded-lg
+bg-gray-50
+p-3
 "
 
 >
 
+<p className="text-xs text-gray-500">
+Items
+</p>
+
+<p className="font-bold">
+{itemCount}
+</p>
+
+</div>
+
+
+
+<div className="
+rounded-lg
+bg-gray-50
+p-3
+"
+
+>
+
+<p className="text-xs text-gray-500">
+Quantity
+</p>
+
+<p className="font-bold">
+{totalQuantity}
+</p>
+
+</div>
+
+
+</div>
+
+
+
+
+
+<button
+
+onClick={()=>setExpanded(
+isOpen ? null : location.id
+)}
+
+className="
+w-full
+rounded-lg
+bg-gray-900
+px-3
+py-2
+text-white
+"
+
+>
+
+{
+isOpen
+?
+"Hide Contents"
+:
+"View Contents"
+}
+
+
+</button>
+
+
+</div>
+
+
+
+
+
+{
+
+isOpen &&
+
+<div className="
+border-t
+p-5
+space-y-3
+">
+
+
+{
+
+itemCount === 0
+
+?
+
+<p className="text-gray-500 text-sm">
+No items stored here.
+</p>
+
+:
+
+location.items.map((entry:any)=>(
+
+
+<div
+
+key={entry.id}
+
+className="
+rounded-lg
+bg-gray-50
+p-3
+"
+
+>
+
+
+<div className="font-medium">
+
+{entry.item.name}
+
+</div>
+
+
+<div className="text-sm text-gray-500">
+
+{entry.quantity} {entry.item.unit}
+
+</div>
+
+
+</div>
+
+
+))
+
+
+}
+
+
+</div>
+
+}
+
+
+
+
+
+
+<div className="
+flex
+gap-3
+border-t
+p-4
+"
+
+
+>
 
 <button
 
 onClick={()=>openEdit(location)}
 
 className="
+flex
+items-center
+gap-2
 rounded-lg
 border
 px-3
-py-1.5
-hover:bg-gray-100
+py-2
 "
 
 >
 
+<Pencil size={16}/>
+
 Edit
 
 </button>
-
 
 
 
@@ -662,10 +683,7 @@ rounded-lg
 bg-red-600
 p-2
 text-white
-hover:bg-red-700
 "
-
-title="Delete storage location"
 
 >
 
@@ -673,16 +691,19 @@ title="Delete storage location"
 
 </button>
 
-</div>
-
-
-
-
 
 </div>
 
 
-))
+
+</div>
+
+
+)
+
+
+})
+
 
 }
 
@@ -692,9 +713,8 @@ title="Delete storage location"
 
 
 
-
-
 </div>
+
 
 );
 

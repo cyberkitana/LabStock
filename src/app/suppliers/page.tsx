@@ -8,15 +8,25 @@ export default async function SuppliersPage(){
 
   const suppliers = await prisma.supplier.findMany({
 
-    orderBy:{
+  orderBy: {
+    name: "asc"
+  },
 
-      name:"asc"
+  include: {
+
+    _count: {
+
+      select: {
+
+        items: true
+
+      }
 
     }
 
-  });
+  }
 
-
+});
 
   return (
 
@@ -63,31 +73,16 @@ export default async function SuppliersPage(){
             <h1
 
               className="
-              text-3xl
+              text-2xl
               font-bold
               text-gray-800
               "
 
             >
 
-              Suppliers
+              Manage Suppliers and Contact Details
 
             </h1>
-
-
-
-            <p
-
-              className="
-              mt-1
-              text-gray-500
-              "
-
-            >
-
-              Manage inventory suppliers and contact details
-
-            </p>
 
 
           </div>

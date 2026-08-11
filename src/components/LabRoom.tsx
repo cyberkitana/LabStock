@@ -98,18 +98,16 @@ const router = useRouter();
 
     <div
 
-      className="
-      relative
-      w-full
-      max-w-6xl
-      mx-auto
-      overflow-hidden
-      rounded-2xl
-      "
+  className="
+  relative
+  w-full
+  max-w-6xl
+  mx-auto
+  overflow-hidden
+  rounded-2xl
+  "
 
-    >
-
-
+>
 
       {/* BASE LAB IMAGE */}
 

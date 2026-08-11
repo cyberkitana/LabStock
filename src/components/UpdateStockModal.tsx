@@ -40,7 +40,6 @@ p-4
 "
 >
 
-
 <div
 className="
 w-full
@@ -108,6 +107,72 @@ py-2
 
 
 
+
+<div>
+
+<label className="text-sm font-medium">
+Storage Location
+</label>
+
+
+<select
+
+name="storageId"
+
+required
+
+className="
+mt-1
+w-full
+rounded-lg
+border
+bg-white
+px-3
+py-2
+"
+
+>
+
+
+<option value="">
+Select storage
+</option>
+
+
+{
+
+item.locations?.map((location:any)=>(
+
+<option
+
+key={location.storageId}
+
+value={location.storageId}
+
+>
+
+{location.storage.name}
+
+(current: {location.quantity})
+
+</option>
+
+))
+
+}
+
+
+</select>
+
+
+</div>
+
+
+
+
+
+
+
 <div>
 
 <label className="text-sm font-medium">
@@ -146,6 +211,8 @@ py-2
 
 
 
+
+
 <div>
 
 <label className="text-sm font-medium">
@@ -174,21 +241,26 @@ bg-white
 Select reason
 </option>
 
+
 <option value="New stock received">
 New stock received
 </option>
+
 
 <option value="Used in experiment">
 Used in experiment
 </option>
 
+
 <option value="Damaged stock">
 Damaged stock
 </option>
 
+
 <option value="Expired stock removed">
 Expired stock removed
 </option>
+
 
 <option value="Stock correction">
 Stock correction
@@ -199,6 +271,7 @@ Stock correction
 
 
 </div>
+
 
 
 

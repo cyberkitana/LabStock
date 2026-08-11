@@ -14,63 +14,39 @@
 
 
 import { prisma } from "@/lib/prisma";
-
-import InventoryTable from "@/components/InventoryTable";
-
-
-
-
-
+import InventoryPageClient from "@/components/inventory/InventoryPageClient";
 export default async function InventoryPage(){
-
-
 
 const inventoryItems =
 
 await prisma.inventoryItem.findMany({
 
 include:{
-
-
-supplier:true,
-
-category:true,
-
-storage:true,
-
-
-records:{
-
-orderBy:{
-
-
-createdAt:"desc"
-
-
-}
-
-}
-
-
+  supplier:true,
+  category:true,
+    records:{
+    orderBy:{
+      createdAt:"desc"
+    }
+  },
+  locations:{
+    include:{
+      storage:true
+    }
+  },
 },
 
 
 orderBy:{
 
 
-createdAt:"desc"
+name:"asc"
 
 
 }
 
 
 });
-
-
-
-
-
-
 
 const suppliers =
 
@@ -87,13 +63,6 @@ name:"asc"
 
 });
 
-
-
-
-
-
-
-
 const categories =
 
 await prisma.category.findMany({
@@ -108,13 +77,6 @@ name:"asc"
 
 
 });
-
-
-
-
-
-
-
 
 const storageLocations =
 
@@ -131,47 +93,12 @@ name:"asc"
 
 });
 
-
-
-
-
-
-
-
-
 return (
-
-<main
-
-className="
-p-8
-"
-
->
-
-
-<InventoryTable
-
-
-inventoryItems={inventoryItems}
-
-
-suppliers={suppliers}
-
-
-categories={categories}
-
-
-storageLocations={storageLocations}
-
-
-/>
-
-
-</main>
-
-
+  <InventoryPageClient
+    inventoryItems={inventoryItems}
+    suppliers={suppliers}
+    categories={categories}
+    storageLocations={storageLocations}
+  />
 );
-
-
 }
