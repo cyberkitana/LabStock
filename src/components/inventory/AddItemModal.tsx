@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 
 type StorageLocation = {
@@ -17,14 +17,15 @@ type StorageAllocation = {
 
 type AddItemModalProps = {
   open: boolean;
+  editItem: any | null;
   onClose: () => void;
   suppliers: any[];
   categories: any[];
   storageLocations: StorageLocation[];
 };
-
 export default function AddItemModal({
   open,
+  editItem,
   onClose,
   suppliers,
   categories,
@@ -51,9 +52,145 @@ export default function AddItemModal({
       quantity: "1",
     },
   ]);
+  useEffect(() => {
+  if (!open) return;
+
+  if (!editItem) {
+    setItemName("");
+    setDescription("");
+    setQuantity("");
+    setMinimumStock("5");
+    setUnit("Unit");
+    setSpecific("");
+    setBatchNumber("");
+    setExpiryDate("");
+    setCategoryId("");
+    setSupplierId("");
+
+    setStorageAllocations([
+      {
+        id: crypto.randomUUID(),
+        storageId: "",
+        opened: "UNKNOWN",
+        quantity: "1",
+      },
+    ]);
+
+    return;
+  }
+
+  setItemName(editItem.name ?? "");
+  setDescription(editItem.description ?? "");
+  setQuantity(String(editItem.quantity ?? 0));
+  setMinimumStock(String(editItem.minimumStock ?? 5));
+  setUnit(editItem.unit ?? "Unit");
+  setSpecific(editItem.specific ?? "");
+  setBatchNumber(editItem.batchNumber ?? "");
+  setExpiryDate(
+    editItem.expiryDate
+      ? new Date(editItem.expiryDate)
+          .toISOString()
+          .split("T")[0]
+      : ""
+  );
+  setCategoryId(editItem.categoryId ?? "");
+  setSupplierId(editItem.supplierId ?? "");
+
+  setStorageAllocations(
+    editItem.locations?.length
+      ? editItem.locations.map((location: any) => ({
+          id: crypto.randomUUID(),
+          storageId: location.storageId,
+          opened:
+            location.opened === true
+              ? "OPENED"
+              : location.opened === false
+              ? "UNOPENED"
+              : "UNKNOWN",
+          quantity: String(location.quantity ?? 0),
+        }))
+      : [
+          {
+            id: crypto.randomUUID(),
+            storageId: "",
+            opened: "UNKNOWN",
+            quantity: "0",
+          },
+        ]
+  );
+}, [open, editItem]);
 
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+useEffect(() => {
+  if (!open) return;
+
+  if (!editItem) {
+    setItemName("");
+    setDescription("");
+    setQuantity("");
+    setMinimumStock("5");
+    setUnit("Unit");
+    setSpecific("");
+    setBatchNumber("");
+    setExpiryDate("");
+    setCategoryId("");
+    setSupplierId("");
+
+    setStorageAllocations([
+      {
+        id: crypto.randomUUID(),
+        storageId: "",
+        opened: "UNKNOWN",
+        quantity: "1",
+      },
+    ]);
+
+    return;
+  }
+
+  setItemName(editItem.name ?? "");
+  setDescription(editItem.description ?? "");
+  setQuantity(String(editItem.quantity ?? 0));
+  setMinimumStock(String(editItem.minimumStock ?? 5));
+  setUnit(editItem.unit ?? "Unit");
+  setSpecific(editItem.specific ?? "");
+  setBatchNumber(editItem.batchNumber ?? "");
+
+  setExpiryDate(
+    editItem.expiryDate
+      ? new Date(editItem.expiryDate)
+          .toISOString()
+          .split("T")[0]
+      : ""
+  );
+
+  setCategoryId(editItem.categoryId ?? "");
+  setSupplierId(editItem.supplierId ?? "");
+
+  setStorageAllocations(
+    editItem.locations?.length
+      ? editItem.locations.map((location: any) => ({
+          id: crypto.randomUUID(),
+          storageId: location.storageId,
+          opened:
+            location.opened === true
+              ? "OPENED"
+              : location.opened === false
+              ? "UNOPENED"
+              : "UNKNOWN",
+          quantity: String(location.quantity ?? 0),
+        }))
+      : [
+          {
+            id: crypto.randomUUID(),
+            storageId: "",
+            opened: "UNKNOWN",
+            quantity: "0",
+          },
+        ]
+  );
+}, [open, editItem]);
 
   if (!open) {
     return null;
@@ -159,8 +296,12 @@ export default function AddItemModal({
     try {
       setSaving(true);
 
-      const response = await fetch("/api/inventory", {
-        method: "POST",
+      const response = await fetch(
+  editItem
+    ? `/api/inventory/${editItem.id}`
+    : "/api/inventory",
+  {
+    method: editItem ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -189,7 +330,10 @@ export default function AddItemModal({
 
       if (!response.ok) {
         setFormError(
-          data.error || "Failed to add inventory item."
+          data.error ||
+  (editItem
+    ? "Failed to update inventory item."
+    : "Failed to add inventory item.")
         );
         return;
       }
@@ -269,7 +413,7 @@ max-h-[94vh]
 
         {/* CONTENT */}
 
-        <div className="min-h-0 flex-1 px-7 pt-3 pb-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-7 pt-3 pb-5">
         <div className="grid grid-cols-2 gap-x-10 gap-y-3">
         {/* BASIC INFORMATION */}
 
@@ -599,16 +743,15 @@ max-h-[94vh]
 {/* STORAGE */}
 
 <section className="border-t border-gray-100 pt-4 mt-2">
-  {/* STORAGE HEADER */}
-
-  <div className="mb-3 flex items-start justify-between gap-4">
+  <div className="mb-3 flex items-start justify-between gap-3">
     <div>
       <h3 className="text-sm font-semibold text-gray-900">
-        Storage & stock allocation
+        Storage
       </h3>
+
       <p className="mt-0.5 text-xs text-gray-500">
-  Record where the stock is stored.
-</p>
+        Record where this stock is stored and whether it has been opened.
+      </p>
     </div>
 
     <div className="flex shrink-0 items-center gap-3">
@@ -659,19 +802,24 @@ max-h-[94vh]
 
   {/* SCROLLABLE LOCATION LIST */}
 
-  <div className="max-h-56 overflow-y-auto pr-1">
-    <div className="space-y-2">
+  <div className="max-h-64 overflow-y-auto pr-2">
+    <div className="space-y-3">
       {storageAllocations.map((allocation, index) => (
         <div
           key={allocation.id}
           className="
             grid
-            grid-cols-[minmax(0,1fr)_minmax(0,1fr)_100px_32px]
+            grid-cols-[minmax(0,1.5fr)_minmax(130px,1fr)_110px_36px]
             items-end
             gap-2
+            rounded-lg
+            border
+            border-gray-200
+            bg-gray-50/50
+            p-3
           "
         >
-          {/* LOCATION */}
+          {/* STORAGE LOCATION */}
 
           <div>
             {index === 0 && (
@@ -952,11 +1100,17 @@ max-h-[94vh]
                 disabled:opacity-60
               "
             >
-              {saving ? "Adding..." : "Add item"}
+              {saving
+  ? editItem
+    ? "Saving..."
+    : "Adding..."
+  : editItem
+  ? "Save changes"
+  : "Add item"}
             </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }

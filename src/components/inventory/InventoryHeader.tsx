@@ -470,12 +470,13 @@ export default function InventoryHeader({
           ADD ITEM MODAL
           ===================================================== */}
 
-      <AddItemModal
-        open={addItemOpen}
-        onClose={() => setAddItemOpen(false)}
-        suppliers={suppliers}
-        categories={categories}
-        storageLocations={storageLocations ?? []}
+            <AddItemModal
+  open={addItemOpen}
+  onClose={() => setAddItemOpen(false)}
+  editItem={null}
+  suppliers={suppliers}
+  categories={categories}
+  storageLocations={storageLocations ?? []}
       />
     </>
   );

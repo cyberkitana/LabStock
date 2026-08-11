@@ -217,19 +217,28 @@ export default function InventoryTable({
                 {/* MAIN ROW */}
 
                 <div
-                  className={`
-                    relative
-                    grid
-                    grid-cols-1
-                    items-center
-                    gap-4
-                    px-5
-                    py-4
-                    transition
-                    hover:bg-gray-50/70
-                    md:grid-cols-[minmax(0,2fr)_minmax(180px,1fr)_130px_52px]
-                    ${expanded ? "bg-gray-50/40" : ""}
-                  `}
+className={`
+  relative
+  grid
+  grid-cols-1
+  items-center
+  gap-4
+  border-l-4
+  px-5
+  py-4
+  transition
+  hover:bg-gray-50
+  md:grid-cols-[minmax(0,2fr)_minmax(180px,1fr)_130px_52px]
+  ${expanded ? "" : "border-transparent"}
+`}
+style={
+  expanded && item.category?.colour
+    ? {
+        borderLeftColor: item.category.colour,
+        backgroundColor: `${item.category.colour}20`,
+      }
+    : undefined
+}
                 >
 
                   {/* ITEM */}
@@ -582,7 +591,17 @@ export default function InventoryTable({
                 {/* EXPANDED DETAILS */}
 
                 {expanded && (
-                  <div className="border-t border-gray-100 bg-gray-50/40 px-5 py-5">
+  <div
+    className="border-t px-5 py-5"
+    style={{
+      backgroundColor: item.category?.colour
+        ? `${item.category.colour}08`
+        : "#f9fafb",
+      borderTopColor: item.category?.colour
+        ? `${item.category.colour}25`
+        : "#e5e7eb",
+    }}
+  >
 
                     <div className="grid gap-5 md:grid-cols-3">
 
@@ -929,18 +948,17 @@ export default function InventoryTable({
 
       {/* ADD / EDIT MODAL */}
 
-      <AddItemModal
-        open={
-          addOpen || !!editItem
-        }
-        onClose={() => {
-          setAddOpen(false);
-          setEditItem(null);
-        }}
-        suppliers={suppliers}
-        categories={categories}
-        storageLocations={storageLocations}
-      />
+<AddItemModal
+  open={addOpen || !!editItem}
+  onClose={() => {
+    setAddOpen(false);
+    setEditItem(null);
+  }}
+  editItem={editItem}
+  suppliers={suppliers}
+  categories={categories}
+  storageLocations={storageLocations}
+/>
 
       {/* UPDATE STOCK */}
 
