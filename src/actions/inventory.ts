@@ -425,53 +425,24 @@ export async function updateStock(
     formData.get("itemId") || ""
   );
 
-  const storageId = String(
-    formData.get("storageId") || ""
+  const changeType = String(
+    formData.get("changeType") || "ADD"
   );
 
   const quantity = Number(
     formData.get("quantity")
   );
 
+  const reason = String(
+    formData.get("reason") || ""
+  );
+
   if (
     !itemId ||
-    !storageId ||
-    !quantity
+    !quantity ||
+    quantity <= 0
   ) {
     return;
-  }
-
-  // ----------------------------------------------------
-  // CHANGE TYPE
-  // ----------------------------------------------------
-
-  const changeType = String(
-    formData.get("changeType") || "ADD"
-  );
-
-  const change =
-    changeType === "REMOVE"
-      ? -Math.abs(quantity)
-      : Math.abs(quantity);
-
-  // ----------------------------------------------------
-  // STATUS
-  // ----------------------------------------------------
-
-  const rawStatus = String(
-    formData.get("opened") ||
-      "UNKNOWN"
-  );
-
-  let status: LocationStatus =
-    "UNKNOWN";
-
-  if (rawStatus === "OPENED") {
-    status = "OPENED";
-  } else if (
-    rawStatus === "UNOPENED"
-  ) {
-    status = "UNOPENED";
   }
 
   // ----------------------------------------------------
@@ -489,116 +460,268 @@ export async function updateStock(
     return;
   }
 
-  // ----------------------------------------------------
-  // FIND LOCATION
-  // ----------------------------------------------------
+  // ====================================================
+  // ADD STOCK
+  // ====================================================
 
-  const location =
-    await prisma.itemLocation.findFirst({
-      where: {
-        itemId,
-        storageId,
-      },
-    });
-
-  if (!location) {
-    return;
-  }
-
-  // ----------------------------------------------------
-  // CALCULATE NEW QUANTITY
-  // ----------------------------------------------------
-
-  const newLocationQuantity =
-    location.quantity + change;
-
-  if (newLocationQuantity < 0) {
-    return;
-  }
-
-  // ----------------------------------------------------
-  // UPDATE LOCATION
-  // ----------------------------------------------------
-
-  await prisma.itemLocation.update({
-    where: {
-      id: location.id,
-    },
-
-    data: {
-      quantity:
-        newLocationQuantity,
-
-      opened: status,
-    },
-  });
-
-  // ----------------------------------------------------
-  // RECALCULATE TOTAL
-  // ----------------------------------------------------
-
-  const locations =
-    await prisma.itemLocation.findMany({
-      where: {
-        itemId,
-      },
-    });
-
-  const totalQuantity =
-    calculateTotalQuantity(
-      locations
+  if (changeType === "ADD") {
+    const storageId = String(
+      formData.get("storageId") || ""
     );
 
-  // ----------------------------------------------------
-  // UPDATE ITEM TOTAL
-  // ----------------------------------------------------
+    const openedValue = String(
+      formData.get("opened") || "UNKNOWN"
+    );
 
-  await prisma.inventoryItem.update({
-    where: {
-      id: itemId,
-    },
+    let opened: LocationStatus =
+      "UNKNOWN";
 
-    data: {
-      quantity: totalQuantity,
-    },
-  });
+    if (openedValue === "OPENED") {
+      opened = "OPENED";
+    } else if (
+      openedValue === "UNOPENED"
+    ) {
+      opened = "UNOPENED";
+    }
 
-  // ----------------------------------------------------
-  // HISTORY
-  // ----------------------------------------------------
+    if (!storageId) {
+      return;
+    }
 
-  await prisma.inventoryRecord.create({
-    data: {
-      itemId,
+    // --------------------------------------------------
+    // FIND MATCHING LOCATION + STATUS
+    // --------------------------------------------------
 
-      type:
-        change > 0
-          ? "STOCK ADDED"
-          : "STOCK REMOVED",
+    const existingLocation =
+      await prisma.itemLocation.findFirst({
+        where: {
+          itemId,
+          storageId,
+          opened,
+        },
+      });
 
-      quantity:
-        Math.abs(change),
+    let updatedLocation;
 
-      previousQuantity:
-        item.quantity,
+    // --------------------------------------------------
+    // UPDATE EXISTING LOCATION
+    // --------------------------------------------------
 
-      newQuantity:
-        totalQuantity,
+    if (existingLocation) {
+      updatedLocation =
+        await prisma.itemLocation.update({
+          where: {
+            id: existingLocation.id,
+          },
 
-      reason: String(
-        formData.get("reason") || ""
-      ),
-    },
-  });
+          data: {
+            quantity:
+              existingLocation.quantity +
+              quantity,
+          },
+        });
+    }
 
-  // ----------------------------------------------------
-  // REFRESH
-  // ----------------------------------------------------
+    // --------------------------------------------------
+    // CREATE NEW LOCATION RECORD
+    // --------------------------------------------------
 
-  revalidatePath("/inventory");
-  revalidatePath("/storage");
+    else {
+      updatedLocation =
+        await prisma.itemLocation.create({
+          data: {
+            itemId,
+            storageId,
+            quantity,
+            opened,
+          },
+        });
+    }
+
+    // --------------------------------------------------
+    // UPDATE TOTAL INVENTORY
+    // --------------------------------------------------
+
+    const locations =
+      await prisma.itemLocation.findMany({
+        where: {
+          itemId,
+        },
+      });
+
+    const totalQuantity =
+      calculateTotalQuantity(
+        locations
+      );
+
+    await prisma.inventoryItem.update({
+      where: {
+        id: itemId,
+      },
+
+      data: {
+        quantity: totalQuantity,
+      },
+    });
+
+    // --------------------------------------------------
+    // HISTORY
+    // --------------------------------------------------
+
+    await prisma.inventoryRecord.create({
+      data: {
+        itemId,
+
+        type: "ADDITION",
+
+        quantity,
+
+        previousQuantity:
+          item.quantity,
+
+        newQuantity:
+          totalQuantity,
+
+        reason:
+          reason ||
+          "Stock added",
+      },
+    });
+
+    revalidatePath("/inventory");
+    revalidatePath("/storage");
+
+    return;
+  }
+
+  // ====================================================
+  // REMOVE STOCK
+  // ====================================================
+
+  if (changeType === "REMOVE") {
+    const locationId = String(
+      formData.get("locationId") || ""
+    );
+
+    if (!locationId) {
+      return;
+    }
+
+    // --------------------------------------------------
+    // FIND EXACT LOCATION RECORD
+    // --------------------------------------------------
+
+    const location =
+      await prisma.itemLocation.findFirst({
+        where: {
+          id: locationId,
+          itemId,
+        },
+      });
+
+    if (!location) {
+      return;
+    }
+
+    // --------------------------------------------------
+    // CHECK AVAILABLE STOCK
+    // --------------------------------------------------
+
+    if (
+      quantity >
+      location.quantity
+    ) {
+      return;
+    }
+
+    const newLocationQuantity =
+      location.quantity - quantity;
+
+    // --------------------------------------------------
+    // UPDATE / DELETE LOCATION
+    // --------------------------------------------------
+
+    if (
+      newLocationQuantity === 0
+    ) {
+      await prisma.itemLocation.delete({
+        where: {
+          id: location.id,
+        },
+      });
+    } else {
+      await prisma.itemLocation.update({
+        where: {
+          id: location.id,
+        },
+
+        data: {
+          quantity:
+            newLocationQuantity,
+        },
+      });
+    }
+
+    // --------------------------------------------------
+    // RECALCULATE TOTAL
+    // --------------------------------------------------
+
+    const locations =
+      await prisma.itemLocation.findMany({
+        where: {
+          itemId,
+        },
+      });
+
+    const totalQuantity =
+      calculateTotalQuantity(
+        locations
+      );
+
+    // --------------------------------------------------
+    // UPDATE ITEM TOTAL
+    // --------------------------------------------------
+
+    await prisma.inventoryItem.update({
+      where: {
+        id: itemId,
+      },
+
+      data: {
+        quantity: totalQuantity,
+      },
+    });
+
+    // --------------------------------------------------
+    // HISTORY
+    // --------------------------------------------------
+
+    await prisma.inventoryRecord.create({
+      data: {
+        itemId,
+
+        type: "REMOVAL",
+
+        quantity,
+
+        previousQuantity:
+          item.quantity,
+
+        newQuantity:
+          totalQuantity,
+
+        reason:
+          reason ||
+          "Stock removed",
+      },
+    });
+
+    revalidatePath("/inventory");
+    revalidatePath("/storage");
+
+    return;
+  }
 }
-
 // ======================================================
 // DELETE INVENTORY ITEM
 // ======================================================

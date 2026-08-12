@@ -113,7 +113,7 @@ export async function POST(request: Request) {
     // CHECK THAT ALLOCATED QUANTITY MATCHES TOTAL
     // -------------------------------------------------
 
-    const allocatedQuantity: number =
+    const allocatedQuantity =
       allocations.reduce(
         (
           total: number,
@@ -134,7 +134,7 @@ export async function POST(request: Request) {
     }
 
     // -------------------------------------------------
-    // CREATE ITEM + LOCATIONS
+    // CREATE ITEM
     // -------------------------------------------------
 
     const item = await prisma.inventoryItem.create({
@@ -190,13 +190,7 @@ export async function POST(request: Request) {
                   allocation.quantity,
 
                 opened:
-                  allocation.opened ===
-                  "OPENED"
-                    ? true
-                    : allocation.opened ===
-                        "UNOPENED"
-                      ? false
-                      : false,
+                  allocation.opened,
               })
             ),
         },
@@ -216,7 +210,27 @@ export async function POST(request: Request) {
     });
 
     // -------------------------------------------------
-    // RESPONSE
+    // CREATE HISTORY RECORD
+    // -------------------------------------------------
+
+    await prisma.inventoryRecord.create({
+      data: {
+        itemId: item.id,
+
+        type: "CREATED",
+
+        quantity,
+
+        previousQuantity: 0,
+
+        newQuantity: quantity,
+
+        reason: "Initial stock",
+      },
+    });
+
+    // -------------------------------------------------
+    // REFRESH INVENTORY PAGES
     // -------------------------------------------------
 
     return NextResponse.json(

@@ -6,6 +6,7 @@ import InventoryDashboard from "@/components/inventory/InventoryDashboard";
 import InventoryTable from "@/components/inventory/InventoryTable";
 import { prepareInventoryExportData } from "@/lib/exports/inventoryExportData";
 import { exportInventoryToExcel } from "@/lib/exports/excelExport";
+import { exportInventoryToPdf } from "@/lib/exports/inventoryPdf";
 
 type Props = {
   inventoryItems: any[];
@@ -166,6 +167,12 @@ export default function InventoryPageClient({
       exportData
     );
   };
+  const handleExportPdf = () => {
+  const data =
+    prepareInventoryExportData(inventoryItems);
+
+  exportInventoryToPdf(data);
+};
 
   // =====================================================
   // PAGE
@@ -180,10 +187,11 @@ export default function InventoryPageClient({
             ================================================= */}
 
         <InventoryHeader
-          suppliers={suppliers}
-          onExport={handleExportExcel}
-          categories={categories}
-          storageLocations={storageLocations}
+  suppliers={suppliers}
+  onExportExcel={handleExportExcel}
+  onExportPdf={handleExportPdf}
+  categories={categories}
+  storageLocations={storageLocations}
 
           search={search}
           setSearch={setSearch}

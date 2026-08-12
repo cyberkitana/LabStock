@@ -103,12 +103,7 @@ export async function PATCH(
 
         return {
           storageId: allocation.storageId || "",
-          opened:
-            status === "OPENED"
-              ? "OPENED"
-              : status === "UNOPENED"
-              ? "UNOPENED"
-              : "UNKNOWN",
+          opened: status,
           quantity: allocationQuantity,
         };
       });
@@ -117,7 +112,7 @@ export async function PATCH(
     // CHECK ALLOCATION TOTAL
     // -------------------------------------------------
 
-    const allocatedQuantity: number =
+    const allocatedQuantity =
       allocations.reduce(
         (
           total: number,
@@ -174,6 +169,7 @@ export async function PATCH(
       async (tx) => {
         await tx.inventoryItem.update({
           where: { id },
+
           data: {
             name: name.trim(),
 
@@ -206,7 +202,7 @@ export async function PATCH(
         });
 
         // -------------------------------------------------
-        // CREATE STOCK HISTORY ENTRY
+        // CREATE HISTORY ENTRY
         // -------------------------------------------------
 
         if (quantityChanged) {
@@ -216,12 +212,11 @@ export async function PATCH(
 
               type:
                 quantityDifference > 0
-                  ? "ADDITION"
-                  : "REMOVAL",
+                  ? "STOCK_ADDED"
+                  : "STOCK_REMOVED",
 
-              quantity: Math.abs(
-                quantityDifference
-              ),
+              quantity:
+                Math.abs(quantityDifference),
 
               previousQuantity:
                 existingItem.quantity,
@@ -233,6 +228,26 @@ export async function PATCH(
                 quantityDifference > 0
                   ? "Stock increased during item edit."
                   : "Stock decreased during item edit.",
+            },
+          });
+        } else {
+          // Item details changed but stock did not.
+          await tx.inventoryRecord.create({
+            data: {
+              itemId: id,
+
+              type: "UPDATED",
+
+              quantity: 0,
+
+              previousQuantity:
+                existingItem.quantity,
+
+              newQuantity:
+                quantity,
+
+              reason:
+                "Inventory item details updated.",
             },
           });
         }
@@ -260,21 +275,21 @@ export async function PATCH(
 
         if (validAllocations.length > 0) {
           await tx.itemLocation.createMany({
-  data: validAllocations.map(
-    (allocation) => ({
-      itemId: id,
+            data: validAllocations.map(
+              (allocation) => ({
+                itemId: id,
 
-      storageId:
-        allocation.storageId,
+                storageId:
+                  allocation.storageId,
 
-      quantity:
-        allocation.quantity,
+                quantity:
+                  allocation.quantity,
 
-      opened:
-        allocation.opened,
-    })
-  ),
-});
+                opened:
+                  allocation.opened,
+              })
+            ),
+          });
         }
 
         // -------------------------------------------------

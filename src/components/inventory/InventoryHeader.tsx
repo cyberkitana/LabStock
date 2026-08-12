@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, Download, FileSpreadsheet, FileText } from "lucide-react";
 import AddItemModal from "@/components/inventory/AddItemModal";
 
 type InventoryHeaderProps = {
@@ -9,7 +9,8 @@ type InventoryHeaderProps = {
   categories: any[];
   storageLocations?: any[];
 
-  onExport: () => void;
+  onExportExcel: () => void;
+onExportPdf: () => void;
 
   search: string;
   setSearch: (value: string) => void;
@@ -38,7 +39,8 @@ export default function InventoryHeader({
   categories,
   storageLocations,
 
-  onExport,
+  onExportExcel,
+onExportPdf,
 
   search,
   setSearch,
@@ -61,6 +63,7 @@ export default function InventoryHeader({
   addItemOpen,
   setAddItemOpen,
 }: InventoryHeaderProps) {
+    const [exportOpen, setExportOpen] = useState(false);
   return (
     <>
       {/* =====================================================
@@ -109,29 +112,133 @@ export default function InventoryHeader({
             <Search size={17} />
             Search
           </button>
-<button
-  type="button"
-  onClick={onExport}
-  className="
-    inline-flex
-    items-center
-    gap-2
-    rounded-lg
-    border
-    border-gray-200
-    bg-white
-    px-4
-    py-2.5
-    text-sm
-    font-medium
-    text-gray-700
-    transition
-    hover:border-gray-300
-    hover:bg-gray-50
-  "
->
-  Export
-</button>
+{/* EXPORT MENU */}
+
+<div className="relative">
+  <button
+    type="button"
+    onClick={() => setExportOpen((current) => !current)}
+    className="
+      inline-flex
+      items-center
+      gap-2
+      rounded-lg
+      border
+      border-gray-200
+      bg-white
+      px-4
+      py-2.5
+      text-sm
+      font-medium
+      text-gray-700
+      transition
+      hover:border-gray-300
+      hover:bg-gray-50
+    "
+    aria-expanded={exportOpen}
+  >
+    <Download size={17} />
+    Export
+  </button>
+
+  {exportOpen && (
+    <div
+      className="
+        absolute
+        right-0
+        top-full
+        z-40
+        mt-2
+        w-52
+        overflow-hidden
+        rounded-xl
+        border
+        border-gray-200
+        bg-white
+        p-1
+        shadow-lg
+      "
+    >
+      {/* EXCEL */}
+
+      <button
+        type="button"
+        onClick={() => {
+          setExportOpen(false);
+          onExportExcel();
+        }}
+        className="
+          flex
+          w-full
+          items-center
+          gap-3
+          rounded-lg
+          px-3
+          py-2.5
+          text-left
+          text-sm
+          text-gray-700
+          transition
+          hover:bg-gray-50
+        "
+      >
+        <FileSpreadsheet
+          size={17}
+          className="text-gray-500"
+        />
+
+        <div>
+          <p className="font-medium text-gray-900">
+            Export to Excel
+          </p>
+
+          <p className="text-xs text-gray-500">
+            Spreadsheet format
+          </p>
+        </div>
+      </button>
+
+      {/* PDF */}
+
+      <button
+        type="button"
+        onClick={() => {
+          setExportOpen(false);
+          onExportPdf();
+        }}
+        className="
+          flex
+          w-full
+          items-center
+          gap-3
+          rounded-lg
+          px-3
+          py-2.5
+          text-left
+          text-sm
+          text-gray-700
+          transition
+          hover:bg-gray-50
+        "
+      >
+        <FileText
+          size={17}
+          className="text-gray-500"
+        />
+
+        <div>
+          <p className="font-medium text-gray-900">
+            Export to PDF
+          </p>
+
+          <p className="text-xs text-gray-500">
+            Printable report
+          </p>
+        </div>
+      </button>
+    </div>
+  )}
+</div>
           {/* ADD ITEM */}
 
           <button

@@ -85,15 +85,89 @@ function formatStorageLocations(
         "Unknown location";
 
       const quantity =
-        location.quantity ?? 0;
+        Number(location.quantity ?? 0);
 
-      return `${locationName} (${quantity} ${
-        item.unit ?? "Unit"
-      })`;
+      const unit =
+        item.unit ?? "Unit";
+
+      // Pluralise storage unit based on the quantity
+      const pluralUnits: Record<string, string> = {
+        unit: "Units",
+        units: "Units",
+        item: "Items",
+        items: "Items",
+        vial: "Vials",
+        vials: "Vials",
+        tube: "Tubes",
+        tubes: "Tubes",
+        bottle: "Bottles",
+        bottles: "Bottles",
+        flask: "Flasks",
+        flasks: "Flasks",
+        plate: "Plates",
+        plates: "Plates",
+        well: "Wells",
+        wells: "Wells",
+        box: "Boxes",
+        boxes: "Boxes",
+        pack: "Packs",
+        packs: "Packs",
+        packet: "Packets",
+        packets: "Packets",
+        container: "Containers",
+        containers: "Containers",
+        kit: "Kits",
+        kits: "Kits",
+        bag: "Bags",
+        bags: "Bags",
+        reagent: "Reagents",
+        reagents: "Reagents",
+      };
+
+      const measurementUnits = [
+        "ml",
+        "µl",
+        "ul",
+        "l",
+        "g",
+        "mg",
+        "kg",
+        "µg",
+        "ug",
+        "ng",
+        "mm",
+        "cm",
+      ];
+
+      const lowerUnit =
+        unit.trim().toLowerCase();
+
+      let displayUnit = unit;
+
+      if (quantity !== 1) {
+        if (
+          pluralUnits[lowerUnit]
+        ) {
+          displayUnit =
+            pluralUnits[lowerUnit];
+        } else if (
+          measurementUnits.includes(
+            lowerUnit
+          )
+        ) {
+          // Measurement units don't get pluralised
+          displayUnit = unit;
+        } else if (
+          !lowerUnit.endsWith("s")
+        ) {
+          displayUnit = `${unit}s`;
+        }
+      }
+
+      return `${locationName} (${quantity} ${displayUnit})`;
     })
     .join(", ");
 }
-
 function formatOpenedStatus(
   item: any
 ): string {

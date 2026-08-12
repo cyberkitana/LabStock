@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import AddItemModal from "@/components/inventory/AddItemModal";
-import UpdateStockModal from "@/components/UpdateStockModal";
+import UpdateStockModal from "@/components/inventory/UpdateStockModal";
 
 import { formatDate, formatDateTime } from "@/lib/date";
 import { pluralizeUnit } from "@/lib/pluralise";
@@ -26,7 +26,26 @@ type Props = {
   suppliers: any[];
   categories: any[];
   storageLocations: any[];
-};
+  };
+
+function getHistoryLabel(type: string) {
+  switch (type) {
+    case "CREATED":
+      return "Item Created";
+
+    case "UPDATED":
+      return "Item Updated";
+
+    case "ADDITION":
+      return "Stock Added";
+
+    case "REMOVAL":
+      return "Stock Removed";
+
+    default:
+      return "Stock Updated";
+  }
+}
 
 function formatStock(item: any) {
   const quantity = item.quantity ?? 0;
@@ -112,6 +131,7 @@ export default function InventoryTable({
   categories,
   storageLocations,
 }: Props) {
+  console.log("STORAGE LOCATIONS IN INVENTORY TABLE:", storageLocations);
   const [addOpen, setAddOpen] = useState(false);
 
   const [editItem, setEditItem] =
@@ -129,9 +149,8 @@ export default function InventoryTable({
   const [openActions, setOpenActions] =
     useState<string | null>(null);
 
-  return (
-    <div className="space-y-5">
-
+return (
+  <div className="mt-5 space-y-6 mb-6">
       {/* TABLE */}
 
       <div className="overflow-visible rounded-xl border border-gray-200 bg-white">
@@ -837,23 +856,22 @@ style={
 
                                   <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white">
 
-                                    {record.type ===
-                                    "STOCK_REMOVED" ? (
-
-                                      <PackageMinus
-                                        size={17}
-                                        className="text-red-500"
-                                      />
-
-                                    ) : (
-
-                                      <PackagePlus
-                                        size={17}
-                                        className="text-emerald-500"
-                                      />
-
-                                    )}
-
+                                    {record.type === "STOCK_REMOVED" ? (
+  <PackageMinus
+    size={17}
+    className="text-red-500"
+  />
+) : record.type === "UPDATED" ? (
+  <Pencil
+    size={16}
+    className="text-blue-500"
+  />
+) : (
+  <PackagePlus
+    size={17}
+    className="text-emerald-500"
+  />
+)}
                                   </div>
 
                                   <div className="min-w-0 flex-1">
@@ -863,7 +881,7 @@ style={
                                       <div>
 
                                         <p className="text-sm font-semibold text-gray-900">
-                                          {record.type}
+                                        {getHistoryLabel(record.type)}
                                         </p>
 
                                         <p className="mt-0.5 text-xs text-gray-500">
@@ -961,12 +979,13 @@ style={
       {/* UPDATE STOCK */}
 
       {stockItem && (
-        <UpdateStockModal
-          item={stockItem}
-          onClose={() =>
-            setStockItem(null)
-          }
-        />
+      <UpdateStockModal
+  item={stockItem}
+  storageLocations={storageLocations}
+  onClose={() =>
+    setStockItem(null)
+  }
+/>
       )}
 
     </div>
