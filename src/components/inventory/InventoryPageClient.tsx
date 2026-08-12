@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import InventoryHeader from "@/components/inventory/InventoryHeader";
 import InventoryDashboard from "@/components/inventory/InventoryDashboard";
 import InventoryTable from "@/components/inventory/InventoryTable";
+import { prepareInventoryExportData } from "@/lib/exports/inventoryExportData";
+import { exportInventoryToExcel } from "@/lib/exports/excelExport";
 
 type Props = {
   inventoryItems: any[];
@@ -35,7 +37,6 @@ export default function InventoryPageClient({
 
   const [expiryFilter, setExpiryFilter] =
     useState("ALL");
-    
 
   // =====================================================
   // MODAL STATE
@@ -152,62 +153,80 @@ export default function InventoryPageClient({
   ]);
 
   // =====================================================
+  // EXCEL EXPORT
+  // =====================================================
+
+  const handleExportExcel = async () => {
+    const exportData =
+      prepareInventoryExportData(
+        inventoryItems
+      );
+
+    await exportInventoryToExcel(
+      exportData
+    );
+  };
+
+  // =====================================================
   // PAGE
   // =====================================================
 
   return (
-      <div className="px-6 py-6 lg:px-8">
-   <div className="space-y-6">
+    <div className="px-6 py-6 lg:px-8">
+      <div className="space-y-6">
 
-      {/* =================================================
-          INVENTORY HEADER
-          ================================================= */}
+        {/* =================================================
+            INVENTORY HEADER
+            ================================================= */}
 
-<InventoryHeader
-  suppliers={suppliers}
-  categories={categories}
-  storageLocations={storageLocations}
+        <InventoryHeader
+          suppliers={suppliers}
+          onExport={handleExportExcel}
+          categories={categories}
+          storageLocations={storageLocations}
 
-  search={search}
-  setSearch={setSearch}
+          search={search}
+          setSearch={setSearch}
 
-  categoryFilter={categoryFilter}
-  setCategoryFilter={setCategoryFilter}
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
 
-  supplierFilter={supplierFilter}
-  setSupplierFilter={setSupplierFilter}
+          supplierFilter={supplierFilter}
+          setSupplierFilter={setSupplierFilter}
 
-  statusFilter={statusFilter}
-  setStatusFilter={setStatusFilter}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
 
-  expiryFilter={expiryFilter}
-  setExpiryFilter={setExpiryFilter}
+          expiryFilter={expiryFilter}
+          setExpiryFilter={setExpiryFilter}
 
-  searchOpen={searchOpen}
-  setSearchOpen={setSearchOpen}
+          searchOpen={searchOpen}
+          setSearchOpen={setSearchOpen}
 
-  addItemOpen={addItemOpen}
-  setAddItemOpen={setAddItemOpen}
-/>      {/* =================================================
-          INVENTORY DASHBOARD
-          ================================================= */}
+          addItemOpen={addItemOpen}
+          setAddItemOpen={setAddItemOpen}
+        />
 
-      <InventoryDashboard
-        inventoryItems={inventoryItems}
-      />
+        {/* =================================================
+            INVENTORY DASHBOARD
+            ================================================= */}
 
-      {/* =================================================
-          INVENTORY TABLE
-          ================================================= */}
+        <InventoryDashboard
+          inventoryItems={inventoryItems}
+        />
 
-      <InventoryTable
-        inventoryItems={filteredItems}
-        suppliers={suppliers}
-        categories={categories}
-        storageLocations={storageLocations}
-      />
+        {/* =================================================
+            INVENTORY TABLE
+            ================================================= */}
 
-    </div>
+        <InventoryTable
+          inventoryItems={filteredItems}
+          suppliers={suppliers}
+          categories={categories}
+          storageLocations={storageLocations}
+        />
+
+      </div>
     </div>
   );
 }

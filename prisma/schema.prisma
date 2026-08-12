@@ -115,7 +115,7 @@ model ItemLocation {
   itemId    String
   storageId String
   quantity  Int      @default(0)
-  opened    Boolean?
+  opened    String   @default("UNKNOWN")
   createdAt DateTime @default(now())
 
   storage StorageLocation @relation(fields: [storageId], references: [id], onDelete: Cascade)

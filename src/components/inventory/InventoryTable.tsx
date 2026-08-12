@@ -459,9 +459,10 @@ style={
                           <button
                             type="button"
                             onClick={() => {
-                              setEditItem(item);
-                              setOpenActions(null);
-                            }}
+  console.log("EDIT ITEM:", item);
+  setEditItem(item);
+  setOpenActions(null);
+}}
                             className="
                               flex
                               w-full
@@ -730,15 +731,12 @@ style={
                                 </div>
 
                                 <p className="mt-1 text-xs text-gray-500">
-
-                                  {location.opened ===
-                                  null
-                                    ? "Status not specified"
-                                    : location.opened
-                                    ? "Opened"
-                                    : "Unopened"}
-
-                                </p>
+  {location.opened === "OPENED"
+    ? "Opened"
+    : location.opened === "UNOPENED"
+    ? "Unopened"
+    : "Unknown"}
+</p>
 
                               </div>
 

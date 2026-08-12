@@ -9,6 +9,8 @@ type InventoryHeaderProps = {
   categories: any[];
   storageLocations?: any[];
 
+  onExport: () => void;
+
   search: string;
   setSearch: (value: string) => void;
 
@@ -35,6 +37,8 @@ export default function InventoryHeader({
   suppliers,
   categories,
   storageLocations,
+
+  onExport,
 
   search,
   setSearch,
@@ -105,7 +109,29 @@ export default function InventoryHeader({
             <Search size={17} />
             Search
           </button>
-
+<button
+  type="button"
+  onClick={onExport}
+  className="
+    inline-flex
+    items-center
+    gap-2
+    rounded-lg
+    border
+    border-gray-200
+    bg-white
+    px-4
+    py-2.5
+    text-sm
+    font-medium
+    text-gray-700
+    transition
+    hover:border-gray-300
+    hover:bg-gray-50
+  "
+>
+  Export
+</button>
           {/* ADD ITEM */}
 
           <button
@@ -125,6 +151,7 @@ export default function InventoryHeader({
               transition
               hover:bg-gray-800
             "
+          
           >
             <Plus size={17} />
             Add Item

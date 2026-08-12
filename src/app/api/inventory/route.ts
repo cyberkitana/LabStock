@@ -196,7 +196,7 @@ export async function POST(request: Request) {
                     : allocation.opened ===
                         "UNOPENED"
                       ? false
-                      : null,
+                      : false,
               })
             ),
         },

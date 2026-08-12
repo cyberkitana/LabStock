@@ -260,27 +260,21 @@ export async function PATCH(
 
         if (validAllocations.length > 0) {
           await tx.itemLocation.createMany({
-            data: validAllocations.map(
-              (allocation) => ({
-                itemId: id,
+  data: validAllocations.map(
+    (allocation) => ({
+      itemId: id,
 
-                storageId:
-                  allocation.storageId,
+      storageId:
+        allocation.storageId,
 
-                quantity:
-                  allocation.quantity,
+      quantity:
+        allocation.quantity,
 
-                opened:
-                  allocation.opened ===
-                  "OPENED"
-                    ? true
-                    : allocation.opened ===
-                      "UNOPENED"
-                    ? false
-                    : null,
-              })
-            ),
-          });
+      opened:
+        allocation.opened,
+    })
+  ),
+});
         }
 
         // -------------------------------------------------

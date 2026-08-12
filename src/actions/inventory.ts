@@ -7,7 +7,10 @@ import { revalidatePath } from "next/cache";
 // TYPES
 // ======================================================
 
-type LocationStatus = "OPENED" | "UNOPENED" | "UNKNOWN";
+type LocationStatus =
+  | "OPENED"
+  | "UNOPENED"
+  | "UNKNOWN";
 
 type SubmittedLocation = {
   storageId: string;
@@ -18,12 +21,6 @@ type SubmittedLocation = {
 // ======================================================
 // HELPER FUNCTIONS
 // ======================================================
-
-// ------------------------------------------------------
-// Parse expiry date safely
-// Prevents timezone conversion problems
-// HTML date input returns YYYY-MM-DD
-// ------------------------------------------------------
 
 function parseDate(value: string) {
   if (!value) {
@@ -40,7 +37,7 @@ function parseDate(value: string) {
 }
 
 // ------------------------------------------------------
-// Get or create supplier
+// Supplier
 // ------------------------------------------------------
 
 async function getSupplierId(name: string) {
@@ -52,9 +49,7 @@ async function getSupplierId(name: string) {
     where: {
       name,
     },
-
     update: {},
-
     create: {
       name,
     },
@@ -64,7 +59,7 @@ async function getSupplierId(name: string) {
 }
 
 // ------------------------------------------------------
-// Get category
+// Category
 // ------------------------------------------------------
 
 async function getCategoryId(name: string) {
@@ -72,20 +67,23 @@ async function getCategoryId(name: string) {
     return undefined;
   }
 
-  const category = await prisma.category.findUnique({
-    where: {
-      name,
-    },
-  });
+  const category =
+    await prisma.category.findUnique({
+      where: {
+        name,
+      },
+    });
 
   return category?.id;
 }
 
 // ------------------------------------------------------
-// Read storage locations from form
+// Read locations
 // ------------------------------------------------------
 
-function getLocations(formData: FormData): SubmittedLocation[] {
+function getLocations(
+  formData: FormData
+): SubmittedLocation[] {
   const raw = String(
     formData.get("locations") || "[]"
   );
@@ -109,22 +107,35 @@ function getLocations(formData: FormData): SubmittedLocation[] {
         Number(location.quantity) > 0
     )
     .map(
-      (location: any): SubmittedLocation => ({
-        storageId: String(location.storageId),
+      (location: any): SubmittedLocation => {
+        let opened: LocationStatus =
+          "UNKNOWN";
 
-        quantity: Number(location.quantity),
+        if (location.opened === "OPENED") {
+          opened = "OPENED";
+        } else if (
+          location.opened === "UNOPENED"
+        ) {
+          opened = "UNOPENED";
+        }
 
-   opened:
-  location.opened === "OPENED" ||
-  location.opened === "UNOPENED"
-    ? location.opened
-    : "UNKNOWN",
-  })
+        return {
+          storageId: String(
+            location.storageId
+          ),
+
+          quantity: Number(
+            location.quantity
+          ),
+
+          opened,
+        };
+      }
     );
 }
 
 // ------------------------------------------------------
-// Calculate total quantity
+// Calculate total
 // ------------------------------------------------------
 
 function calculateTotalQuantity(
@@ -138,44 +149,31 @@ function calculateTotalQuantity(
 }
 
 // ======================================================
-// CREATE INVENTORY ITEM
+// ADD INVENTORY ITEM
 // ======================================================
 
 export async function addInventoryItem(
   formData: FormData
 ) {
-  // ------------------------------------------------------
-  // READ SUPPLIER + CATEGORY
-  // ------------------------------------------------------
+  const supplierId =
+    await getSupplierId(
+      String(
+        formData.get("supplier") || ""
+      ).trim()
+    );
 
-  const supplierId = await getSupplierId(
-    String(
-      formData.get("supplier") || ""
-    ).trim()
-  );
+  const categoryId =
+    await getCategoryId(
+      String(
+        formData.get("category") || ""
+      ).trim()
+    );
 
-  const categoryId = await getCategoryId(
-    String(
-      formData.get("category") || ""
-    ).trim()
-  );
-
-  // ------------------------------------------------------
-  // BUILD STORAGE LOCATION DATA
-  // ------------------------------------------------------
-
-  const locations = getLocations(formData);
-
-  // ------------------------------------------------------
-  // CALCULATE TOTAL QUANTITY
-  // ------------------------------------------------------
+  const locations =
+    getLocations(formData);
 
   const totalQuantity =
     calculateTotalQuantity(locations);
-
-  // ------------------------------------------------------
-  // CREATE INVENTORY ITEM
-  // ------------------------------------------------------
 
   const item =
     await prisma.inventoryItem.create({
@@ -202,9 +200,10 @@ export async function addInventoryItem(
           formData.get("specific") || ""
         ),
 
-        batchNumber: String(
-          formData.get("batchNumber") || ""
-        ) || null,
+        batchNumber:
+          String(
+            formData.get("batchNumber") || ""
+          ) || null,
 
         expiryDate: parseDate(
           String(
@@ -218,9 +217,9 @@ export async function addInventoryItem(
       },
     });
 
-  // ------------------------------------------------------
+  // ----------------------------------------------------
   // CREATE STORAGE LOCATIONS
-  // ------------------------------------------------------
+  // ----------------------------------------------------
 
   if (locations.length > 0) {
     await prisma.itemLocation.createMany({
@@ -234,20 +233,16 @@ export async function addInventoryItem(
           quantity:
             location.quantity,
 
-            opened:
-  location.opened === "OPENED"
-    ? true
-    : location.opened === "UNOPENED"
-    ? false
-    : undefined,
+          opened:
+            location.opened,
         })
       ),
     });
   }
 
-  // ------------------------------------------------------
-  // CREATE INVENTORY HISTORY
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // HISTORY
+  // ----------------------------------------------------
 
   await prisma.inventoryRecord.create({
     data: {
@@ -265,10 +260,6 @@ export async function addInventoryItem(
     },
   });
 
-  // ------------------------------------------------------
-  // REFRESH UI
-  // ------------------------------------------------------
-
   revalidatePath("/inventory");
   revalidatePath("/storage");
 }
@@ -280,10 +271,6 @@ export async function addInventoryItem(
 export async function updateInventoryItem(
   formData: FormData
 ) {
-  // ------------------------------------------------------
-  // READ ITEM ID
-  // ------------------------------------------------------
-
   const id = String(
     formData.get("id") || ""
   );
@@ -292,34 +279,25 @@ export async function updateInventoryItem(
     return;
   }
 
-  // ------------------------------------------------------
-  // READ SUPPLIER + CATEGORY
-  // ------------------------------------------------------
+  const supplierId =
+    await getSupplierId(
+      String(
+        formData.get("supplier") || ""
+      ).trim()
+    );
 
-  const supplierId = await getSupplierId(
-    String(
-      formData.get("supplier") || ""
-    ).trim()
-  );
+  const categoryId =
+    await getCategoryId(
+      String(
+        formData.get("category") || ""
+      ).trim()
+    );
 
-  const categoryId = await getCategoryId(
-    String(
-      formData.get("category") || ""
-    ).trim()
-  );
-
-  // ------------------------------------------------------
-  // BUILD UPDATED STORAGE DATA
-  // ------------------------------------------------------
-
-  const locations = getLocations(formData);
+  const locations =
+    getLocations(formData);
 
   const totalQuantity =
     calculateTotalQuantity(locations);
-
-  // ------------------------------------------------------
-  // FIND EXISTING ITEM
-  // ------------------------------------------------------
 
   const previousItem =
     await prisma.inventoryItem.findUnique({
@@ -332,9 +310,9 @@ export async function updateInventoryItem(
     return;
   }
 
-  // ------------------------------------------------------
-  // UPDATE MAIN INVENTORY ITEM
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // UPDATE ITEM
+  // ----------------------------------------------------
 
   await prisma.inventoryItem.update({
     where: {
@@ -364,9 +342,10 @@ export async function updateInventoryItem(
         formData.get("specific") || ""
       ),
 
-      batchNumber: String(
-        formData.get("batchNumber") || ""
-      ) || null,
+      batchNumber:
+        String(
+          formData.get("batchNumber") || ""
+        ) || null,
 
       expiryDate: parseDate(
         String(
@@ -380,19 +359,15 @@ export async function updateInventoryItem(
     },
   });
 
-  // ------------------------------------------------------
-  // REMOVE OLD STORAGE LOCATIONS
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // REPLACE LOCATIONS
+  // ----------------------------------------------------
 
   await prisma.itemLocation.deleteMany({
     where: {
       itemId: id,
     },
   });
-
-  // ------------------------------------------------------
-  // CREATE UPDATED STORAGE LOCATIONS
-  // ------------------------------------------------------
 
   if (locations.length > 0) {
     await prisma.itemLocation.createMany({
@@ -406,20 +381,16 @@ export async function updateInventoryItem(
           quantity:
             location.quantity,
 
-  opened:
-  location.opened === "OPENED"
-    ? true
-    : location.opened === "UNOPENED"
-    ? false
-    : undefined,
+          opened:
+            location.opened,
         })
       ),
     });
   }
 
-  // ------------------------------------------------------
-  // CREATE UPDATE HISTORY
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // HISTORY
+  // ----------------------------------------------------
 
   await prisma.inventoryRecord.create({
     data: {
@@ -439,25 +410,17 @@ export async function updateInventoryItem(
     },
   });
 
-  // ------------------------------------------------------
-  // REFRESH UI
-  // ------------------------------------------------------
-
   revalidatePath("/inventory");
   revalidatePath("/storage");
 }
 
 // ======================================================
-// UPDATE STOCK QUANTITY
+// UPDATE STOCK
 // ======================================================
 
 export async function updateStock(
   formData: FormData
 ) {
-  // ------------------------------------------------------
-  // READ STOCK CHANGE REQUEST
-  // ------------------------------------------------------
-
   const itemId = String(
     formData.get("itemId") || ""
   );
@@ -466,21 +429,54 @@ export async function updateStock(
     formData.get("storageId") || ""
   );
 
-  const change = Number(
+  const quantity = Number(
     formData.get("quantity")
   );
 
   if (
     !itemId ||
     !storageId ||
-    !change
+    !quantity
   ) {
     return;
   }
 
-  // ------------------------------------------------------
-  // FIND INVENTORY ITEM
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // CHANGE TYPE
+  // ----------------------------------------------------
+
+  const changeType = String(
+    formData.get("changeType") || "ADD"
+  );
+
+  const change =
+    changeType === "REMOVE"
+      ? -Math.abs(quantity)
+      : Math.abs(quantity);
+
+  // ----------------------------------------------------
+  // STATUS
+  // ----------------------------------------------------
+
+  const rawStatus = String(
+    formData.get("opened") ||
+      "UNKNOWN"
+  );
+
+  let status: LocationStatus =
+    "UNKNOWN";
+
+  if (rawStatus === "OPENED") {
+    status = "OPENED";
+  } else if (
+    rawStatus === "UNOPENED"
+  ) {
+    status = "UNOPENED";
+  }
+
+  // ----------------------------------------------------
+  // FIND ITEM
+  // ----------------------------------------------------
 
   const item =
     await prisma.inventoryItem.findUnique({
@@ -493,35 +489,14 @@ export async function updateStock(
     return;
   }
 
-  // ------------------------------------------------------
-  // READ LOCATION STATUS
-  // ------------------------------------------------------
-
-  const rawStatus =
-    String(
-      formData.get("status") ||
-      formData.get("opened") ||
-      ""
-    );
-
-  const status: LocationStatus =
-    rawStatus === "OPENED" ||
-    rawStatus === "opened"
-      ? "OPENED"
-      : rawStatus === "UNOPENED" ||
-          rawStatus === "unopened"
-        ? "UNOPENED"
-        : "UNKNOWN";
-
-  // ------------------------------------------------------
-  // FIND STORAGE LOCATION
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // FIND LOCATION
+  // ----------------------------------------------------
 
   const location =
     await prisma.itemLocation.findFirst({
       where: {
         itemId,
-
         storageId,
       },
     });
@@ -530,9 +505,9 @@ export async function updateStock(
     return;
   }
 
-  // ------------------------------------------------------
-  // CALCULATE NEW LOCATION QUANTITY
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // CALCULATE NEW QUANTITY
+  // ----------------------------------------------------
 
   const newLocationQuantity =
     location.quantity + change;
@@ -541,9 +516,9 @@ export async function updateStock(
     return;
   }
 
-  // ------------------------------------------------------
-  // UPDATE STORAGE LOCATION
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // UPDATE LOCATION
+  // ----------------------------------------------------
 
   await prisma.itemLocation.update({
     where: {
@@ -553,12 +528,14 @@ export async function updateStock(
     data: {
       quantity:
         newLocationQuantity,
+
+      opened: status,
     },
   });
 
-  // ------------------------------------------------------
-  // RECALCULATE TOTAL INVENTORY
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // RECALCULATE TOTAL
+  // ----------------------------------------------------
 
   const locations =
     await prisma.itemLocation.findMany({
@@ -568,11 +545,13 @@ export async function updateStock(
     });
 
   const totalQuantity =
-    calculateTotalQuantity(locations);
+    calculateTotalQuantity(
+      locations
+    );
 
-  // ------------------------------------------------------
-  // UPDATE INVENTORY TOTAL
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // UPDATE ITEM TOTAL
+  // ----------------------------------------------------
 
   await prisma.inventoryItem.update({
     where: {
@@ -584,9 +563,9 @@ export async function updateStock(
     },
   });
 
-  // ------------------------------------------------------
-  // CREATE STOCK HISTORY
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // HISTORY
+  // ----------------------------------------------------
 
   await prisma.inventoryRecord.create({
     data: {
@@ -612,9 +591,9 @@ export async function updateStock(
     },
   });
 
-  // ------------------------------------------------------
-  // REFRESH UI
-  // ------------------------------------------------------
+  // ----------------------------------------------------
+  // REFRESH
+  // ----------------------------------------------------
 
   revalidatePath("/inventory");
   revalidatePath("/storage");
@@ -627,10 +606,6 @@ export async function updateStock(
 export async function deleteInventoryItem(
   formData: FormData
 ) {
-  // ------------------------------------------------------
-  // READ ITEM ID
-  // ------------------------------------------------------
-
   const id = String(
     formData.get("id") || ""
   );
@@ -639,19 +614,11 @@ export async function deleteInventoryItem(
     return;
   }
 
-  // ------------------------------------------------------
-  // DELETE STORAGE LOCATIONS
-  // ------------------------------------------------------
-
   await prisma.itemLocation.deleteMany({
     where: {
       itemId: id,
     },
   });
-
-  // ------------------------------------------------------
-  // DELETE INVENTORY HISTORY
-  // ------------------------------------------------------
 
   await prisma.inventoryRecord.deleteMany({
     where: {
@@ -659,19 +626,11 @@ export async function deleteInventoryItem(
     },
   });
 
-  // ------------------------------------------------------
-  // DELETE INVENTORY ITEM
-  // ------------------------------------------------------
-
   await prisma.inventoryItem.delete({
     where: {
       id,
     },
   });
-
-  // ------------------------------------------------------
-  // REFRESH UI
-  // ------------------------------------------------------
 
   revalidatePath("/inventory");
   revalidatePath("/storage");

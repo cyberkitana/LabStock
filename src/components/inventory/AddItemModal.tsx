@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, X } from "lucide-react";
 
 type StorageLocation = {
@@ -31,6 +32,7 @@ export default function AddItemModal({
   categories,
   storageLocations,
 }: AddItemModalProps) {
+  const router = useRouter();
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
   const [quantity, setQuantity] = useState("");
@@ -102,11 +104,11 @@ export default function AddItemModal({
           id: crypto.randomUUID(),
           storageId: location.storageId,
           opened:
-            location.opened === true
-              ? "OPENED"
-              : location.opened === false
-              ? "UNOPENED"
-              : "UNKNOWN",
+  location.opened === "OPENED" ||
+  location.opened === "UNOPENED" ||
+  location.opened === "UNKNOWN"
+    ? location.opened
+    : "UNKNOWN",
           quantity: String(location.quantity ?? 0),
         }))
       : [
@@ -122,75 +124,6 @@ export default function AddItemModal({
 
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
-useEffect(() => {
-  if (!open) return;
-
-  if (!editItem) {
-    setItemName("");
-    setDescription("");
-    setQuantity("");
-    setMinimumStock("5");
-    setUnit("Unit");
-    setSpecific("");
-    setBatchNumber("");
-    setExpiryDate("");
-    setCategoryId("");
-    setSupplierId("");
-
-    setStorageAllocations([
-      {
-        id: crypto.randomUUID(),
-        storageId: "",
-        opened: "UNKNOWN",
-        quantity: "1",
-      },
-    ]);
-
-    return;
-  }
-
-  setItemName(editItem.name ?? "");
-  setDescription(editItem.description ?? "");
-  setQuantity(String(editItem.quantity ?? 0));
-  setMinimumStock(String(editItem.minimumStock ?? 5));
-  setUnit(editItem.unit ?? "Unit");
-  setSpecific(editItem.specific ?? "");
-  setBatchNumber(editItem.batchNumber ?? "");
-
-  setExpiryDate(
-    editItem.expiryDate
-      ? new Date(editItem.expiryDate)
-          .toISOString()
-          .split("T")[0]
-      : ""
-  );
-
-  setCategoryId(editItem.categoryId ?? "");
-  setSupplierId(editItem.supplierId ?? "");
-
-  setStorageAllocations(
-    editItem.locations?.length
-      ? editItem.locations.map((location: any) => ({
-          id: crypto.randomUUID(),
-          storageId: location.storageId,
-          opened:
-            location.opened === true
-              ? "OPENED"
-              : location.opened === false
-              ? "UNOPENED"
-              : "UNKNOWN",
-          quantity: String(location.quantity ?? 0),
-        }))
-      : [
-          {
-            id: crypto.randomUUID(),
-            storageId: "",
-            opened: "UNKNOWN",
-            quantity: "0",
-          },
-        ]
-  );
-}, [open, editItem]);
 
   if (!open) {
     return null;
@@ -338,9 +271,10 @@ useEffect(() => {
         return;
       }
 
-      console.log("Item created:", data.item);
+      console.log("Item saved:", data.item);
 
-      onClose();
+router.refresh();
+onClose();
     } catch (error) {
       console.error(error);
       setFormError(

@@ -245,10 +245,6 @@ p-5
 
 >
 
-
-
-
-
 {
 
 records.length === 0 ? (
@@ -277,10 +273,7 @@ No history recorded yet.
 
 (
 
-
 records.map((record)=>(
-
-
 
 <div
 
