@@ -1,0 +1,51 @@
+## 18 August 2026 | Storage & Supplier Management
+
+Today’s work focused on refining the **Storage** and **Suppliers** sections of LabStock.
+
+### Storage
+
+* Refined the storage overview and expanded storage views.
+* Added and refined storage creation, editing, and deletion workflows.
+* Improved the overall presentation and interaction of storage cards.
+
+### Suppliers
+
+* Introduced supplier cards with front and back views.
+* Added supplier contact details, including handling for suppliers with no contact information available.
+* Added supplier inventory to the card back with scrollable inventory when required.
+* Added supplier search functionality.
+* Improved the Add/Edit Supplier interface by arranging fields into a more compact layout.
+* Standardised inventory unit capitalisation and pluralisation.
+* Refined supplier card actions and overall presentation.
+
+The Supplier and Storage sections are now more consistent with the rest of the LabStock interface while providing more information without making the main views feel crowded.
+
+### Screenshots
+
+**Storage**
+
+![Storage Overview](./public/screenshots/storage/Storage%20Overview_18.08.26.PNG)
+
+![Storage Expanded](./public/screenshots/storage/Storage_Expanded_18.08.26.PNG)
+
+![Storage Add](./public/screenshots/storage/Storage_Add_18.08.26.PNG)
+
+![Storage Edit](./public/screenshots/storage/Storage_Edit_18.08.26.PNG)
+
+![Storage Delete](./public/screenshots/storage/Storage_Delete_18.08.26.PNG)
+
+**Suppliers**
+
+![Supplier Overview](./public/screenshots/suppliers/Supplier%20Overview_18.08.26.PNG)
+
+![Supplier Card Front](./public/screenshots/suppliers/Supplier%20Card_Front_18.08.26.PNG)
+
+![Supplier Card No Details](./public/screenshots/suppliers/Supplier%20Card_Front__No%20details_18.08.26.PNG)
+
+![Supplier Card Back](./public/screenshots/suppliers/Supplier%20Card_Back_18.08.26.PNG)
+
+![Supplier Search](./public/screenshots/suppliers/Supplier_Search_18.08.26.PNG)
+
+![Supplier Add](./public/screenshots/suppliers/Supplier_Add_18.08.26.PNG)
+
+![Supplier Edit](./public/screenshots/suppliers/Supplier_Edit_18.08.26.PNG)

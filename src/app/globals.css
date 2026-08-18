@@ -296,7 +296,23 @@
 .font-data {
   font-family: var(--font-plex-mono);
 }
+  /*
+    Clickable elements
 
+    Keep the pointer cursor consistent across the application.
+    Disabled buttons retain the appropriate disabled cursor.
+  */
+
+  button:not(:disabled),
+  a,
+  select,
+  [role="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
 
 /*
   Technical labels

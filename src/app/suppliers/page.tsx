@@ -1,160 +1,35 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import SupplierManager from "@/components/SupplierManager";
+import SupplierPageClient from "@/components/suppliers/SupplierPageClient";
 
-
-export default async function SuppliersPage(){
-
-
+export default async function SuppliersPage() {
   const suppliers = await prisma.supplier.findMany({
-
-  orderBy: {
-    name: "asc"
-  },
-
-  include: {
-
-    _count: {
-
-      select: {
-
-        items: true
-
-      }
-
-    }
-
-  }
-
-});
+    orderBy: {
+      name: "asc",
+    },
+    include: {
+      items: {
+        orderBy: {
+          name: "asc",
+        },
+        select: {
+          id: true,
+          name: true,
+          specific: true,
+          quantity: true,
+          unit: true,
+        },
+      },
+      _count: {
+        select: {
+          items: true,
+        },
+      },
+    },
+  });
 
   return (
-
-    <main
-
-      className="
-      min-h-screen
-      p-8
-      bg-gray-50
-      "
-
-    >
-
-
-      <div
-
-        className="
-        max-w-7xl
-        mx-auto
-        "
-
-      >
-
-
-
-        {/* Header */}
-
-        <div
-
-          className="
-          flex
-          items-center
-          justify-between
-          mb-8
-          "
-
-        >
-
-
-
-          <div>
-
-
-            <h1
-
-              className="
-              text-2xl
-              font-bold
-              text-gray-800
-              "
-
-            >
-
-              Manage Suppliers and Contact Details
-
-            </h1>
-
-
-          </div>
-
-
-
-
-
-          <Link
-
-            href="/lab-room"
-
-            className="
-            rounded-lg
-            bg-gray-800
-            px-4
-            py-2
-            text-white
-            hover:bg-gray-700
-            "
-
-          >
-
-            ← Back to Lab Room
-
-          </Link>
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-        {/* Supplier management area */}
-
-        <div
-
-          className="
-          rounded-2xl
-          border
-          bg-white
-          p-6
-          shadow-sm
-          "
-
-        >
-
-
-          <SupplierManager
-
-            suppliers={suppliers}
-
-          />
-
-
-        </div>
-
-
-
-
-      </div>
-
-
-    </main>
-
-
+    <SupplierPageClient
+      suppliers={suppliers}
+    />
   );
-
-
 }

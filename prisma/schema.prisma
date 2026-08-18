@@ -113,12 +113,12 @@ model StorageLocation {
 model ItemLocation {
   id        String   @id @default(cuid())
   itemId    String
-  storageId String
+  storageId String?
   quantity  Int      @default(0)
   opened    String   @default("UNKNOWN")
   createdAt DateTime @default(now())
 
-  storage StorageLocation @relation(fields: [storageId], references: [id], onDelete: Cascade)
+  storage StorageLocation? @relation(fields: [storageId], references: [id], onDelete: SetNull)
   item    InventoryItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
 
   @@unique([itemId, storageId, opened])

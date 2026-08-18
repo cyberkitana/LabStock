@@ -273,8 +273,9 @@ export default function AddItemModal({
 
       console.log("Item saved:", data.item);
 
-router.refresh();
 onClose();
+router.refresh();
+
     } catch (error) {
       console.error(error);
       setFormError(
@@ -663,12 +664,12 @@ max-h-[94vh]
         <option value="mg">mg</option>
         <option value="g">g</option>
         <option value="kg">kg</option>
-        <option value="vial">Vial</option>
-        <option value="bottle">Bottle</option>
-        <option value="tube">Tube</option>
-        <option value="pack">Pack</option>
-        <option value="box">Box</option>
-        <option value="kit">Kit</option>
+        <option value="Vial">Vial</option>
+        <option value="Bottle">Bottle</option>
+        <option value="Tube">Tube</option>
+        <option value="Pack">Pack</option>
+        <option value="Box">Box</option>
+        <option value="Kit">Kit</option>
       </select>
     </div>
 

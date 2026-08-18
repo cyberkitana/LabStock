@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
 import CategoryManager from "@/components/CategoryManager";
-import SupplierManager from "@/components/SupplierManager";
-import StorageManager from "@/components/StorageManager";
+import SupplierManager from "@/components/suppliers/SupplierManager";
+import StorageManager from "@/components/storage/StorageManager";
 
 
 /*

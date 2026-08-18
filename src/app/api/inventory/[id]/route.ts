@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normaliseUnit } from "@/lib/normaliseUnit";
 
 type StorageAllocationInput = {
   storageId: string;
@@ -180,8 +181,7 @@ export async function PATCH(
 
             minimumStock,
 
-            unit:
-              unit?.trim() || "Unit",
+            unit: normaliseUnit(unit),
 
             specific:
               specific?.trim() || null,

@@ -55,15 +55,47 @@ export async function exportInventoryToPDF(
   ];
 
   // =====================================================
+  // PDF-SAFE TEXT
+  // =====================================================
+  //
+  // jsPDF's built-in Helvetica font does not reliably
+  // support the Unicode micro symbol (µ).
+  //
+  // We therefore convert µ -> u only in the PDF.
+  // The actual inventory data remains unchanged.
+  //
+  // Example:
+  // "Pipette Tips: 200 µL"
+  // becomes
+  // "Pipette Tips: 200 uL"
+  //
+  // =====================================================
+
+  const pdfSafeText = (
+    value: string | number | null | undefined
+  ) => {
+    return String(value ?? "")
+      .replace(/µ/g, "u")
+      .replace(/μ/g, "u");
+  };
+
+  // =====================================================
   // HELPERS
   // =====================================================
 
   const addPageHeader = (
     title: string
   ) => {
-    doc.setFont("helvetica", "bold");
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
     doc.setFontSize(18);
-    doc.setTextColor(...darkText);
+
+    doc.setTextColor(
+      ...darkText
+    );
 
     doc.text(
       `LabStock | ${title}`,
@@ -71,9 +103,16 @@ export async function exportInventoryToPDF(
       16
     );
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
     doc.setFontSize(8.5);
-    doc.setTextColor(...mutedText);
+
+    doc.setTextColor(
+      ...mutedText
+    );
 
     doc.text(
       `Generated: ${data.generatedAt.toLocaleString(
@@ -83,7 +122,9 @@ export async function exportInventoryToPDF(
       22
     );
 
-    doc.setDrawColor(...lightBorder);
+    doc.setDrawColor(
+      ...lightBorder
+    );
 
     doc.line(
       14,
@@ -97,9 +138,16 @@ export async function exportInventoryToPDF(
     const pageNumber =
       doc.getNumberOfPages();
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
     doc.setFontSize(8);
-    doc.setTextColor(...mutedText);
+
+    doc.setTextColor(
+      ...mutedText
+    );
 
     doc.text(
       `LabStock • Page ${pageNumber}`,
@@ -114,14 +162,25 @@ export async function exportInventoryToPDF(
   const getPriorityStyle = (
     priority: string
   ) => {
-    if (priority === "URGENT") {
+    if (
+      priority === "URGENT"
+    ) {
       return {
-        fill: [254, 226, 226] as [
+        fill: [
+          254,
+          226,
+          226,
+        ] as [
           number,
           number,
           number
         ],
-        text: [153, 27, 27] as [
+
+        text: [
+          153,
+          27,
+          27,
+        ] as [
           number,
           number,
           number
@@ -130,12 +189,21 @@ export async function exportInventoryToPDF(
     }
 
     return {
-      fill: [254, 243, 199] as [
+      fill: [
+        254,
+        243,
+        199,
+      ] as [
         number,
         number,
         number
       ],
-      text: [146, 64, 14] as [
+
+      text: [
+        146,
+        64,
+        14,
+      ] as [
         number,
         number,
         number
@@ -146,14 +214,25 @@ export async function exportInventoryToPDF(
   const getStatusStyle = (
     status: string
   ) => {
-    if (status === "Out of stock") {
+    if (
+      status === "Out of stock"
+    ) {
       return {
-        fill: [254, 226, 226] as [
+        fill: [
+          254,
+          226,
+          226,
+        ] as [
           number,
           number,
           number
         ],
-        text: [153, 27, 27] as [
+
+        text: [
+          153,
+          27,
+          27,
+        ] as [
           number,
           number,
           number
@@ -161,14 +240,25 @@ export async function exportInventoryToPDF(
       };
     }
 
-    if (status === "Low stock") {
+    if (
+      status === "Low stock"
+    ) {
       return {
-        fill: [254, 243, 199] as [
+        fill: [
+          254,
+          243,
+          199,
+        ] as [
           number,
           number,
           number
         ],
-        text: [146, 64, 14] as [
+
+        text: [
+          146,
+          64,
+          14,
+        ] as [
           number,
           number,
           number
@@ -177,12 +267,21 @@ export async function exportInventoryToPDF(
     }
 
     return {
-      fill: [240, 253, 244] as [
+      fill: [
+        240,
+        253,
+        244,
+      ] as [
         number,
         number,
         number
       ],
-      text: [22, 101, 52] as [
+
+      text: [
+        22,
+        101,
+        52,
+      ] as [
         number,
         number,
         number
@@ -194,12 +293,23 @@ export async function exportInventoryToPDF(
   // ORDER LIST
   // =====================================================
 
-  addPageHeader("Order List");
+  addPageHeader(
+    "Order List"
+  );
 
-  if (data.orderList.length === 0) {
-    doc.setFont("helvetica", "normal");
+  if (
+    data.orderList.length === 0
+  ) {
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
     doc.setFontSize(11);
-    doc.setTextColor(...mutedText);
+
+    doc.setTextColor(
+      ...mutedText
+    );
 
     doc.text(
       "No items currently require ordering.",
@@ -220,15 +330,39 @@ export async function exportInventoryToPDF(
         "Unit",
       ]],
 
+      // -------------------------------------------------
+      // PDF-SAFE ORDER DATA
+      // -------------------------------------------------
+
       body: data.orderList.map(
         (item) => [
-          item.priority,
-          item.item,
-          item.supplier,
-          item.category,
-          String(item.currentStock),
-          String(item.minimumStock),
-          item.unit,
+          pdfSafeText(
+            item.priority
+          ),
+
+          pdfSafeText(
+            item.item
+          ),
+
+          pdfSafeText(
+            item.supplier
+          ),
+
+          pdfSafeText(
+            item.category
+          ),
+
+          String(
+            item.currentStock
+          ),
+
+          String(
+            item.minimumStock
+          ),
+
+          pdfSafeText(
+            item.unit
+          ),
         ]
       ),
 
@@ -236,24 +370,49 @@ export async function exportInventoryToPDF(
 
       styles: {
         font: "helvetica",
+
         fontSize: 8.5,
-        textColor: darkText,
+
+        textColor:
+          darkText,
+
         cellPadding: 3,
-        lineColor: lightBorder,
+
+        lineColor:
+          lightBorder,
+
         lineWidth: 0.2,
+
         valign: "middle",
+
+        overflow: "linebreak",
+
+        cellWidth:
+          "wrap",
       },
 
       headStyles: {
         fillColor: navy,
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
+
+        textColor: [
+          255,
+          255,
+          255,
+        ],
+
+        fontStyle:
+          "bold",
+
         fontSize: 8.5,
+
         halign: "left",
+
+        valign: "middle",
       },
 
       alternateRowStyles: {
-        fillColor: lightBackground,
+        fillColor:
+          lightBackground,
       },
 
       columnStyles: {
@@ -261,52 +420,68 @@ export async function exportInventoryToPDF(
           cellWidth: 25,
           halign: "center",
         },
+
         1: {
           cellWidth: 55,
+          overflow: "linebreak",
         },
+
         2: {
           cellWidth: 48,
+          overflow: "linebreak",
         },
+
         3: {
           cellWidth: 38,
+          overflow: "linebreak",
         },
+
         4: {
           cellWidth: 28,
           halign: "right",
         },
+
         5: {
           cellWidth: 28,
           halign: "right",
         },
+
         6: {
           cellWidth: 22,
         },
       },
 
-      didParseCell: (hookData) => {
-        if (
-          hookData.section === "body" &&
-          hookData.column.index === 0
-        ) {
-          const priority =
-            String(hookData.cell.raw);
+      didParseCell:
+        (hookData) => {
+          if (
+            hookData.section ===
+              "body" &&
+            hookData.column.index ===
+              0
+          ) {
+            const priority =
+              String(
+                hookData.cell.raw
+              );
 
-          const style =
-            getPriorityStyle(priority);
+            const style =
+              getPriorityStyle(
+                priority
+              );
 
-          hookData.cell.styles.fillColor =
-            style.fill;
+            hookData.cell.styles.fillColor =
+              style.fill;
 
-          hookData.cell.styles.textColor =
-            style.text;
+            hookData.cell.styles.textColor =
+              style.text;
 
-          hookData.cell.styles.fontStyle =
-            "bold";
+            hookData.cell.styles.fontStyle =
+              "bold";
 
-          hookData.cell.styles.halign =
-            "center";
-        }
-      },
+            hookData.cell.styles.halign =
+              "center";
+          }
+        },
 
       margin: {
         left: 14,
@@ -314,8 +489,6 @@ export async function exportInventoryToPDF(
       },
     });
   }
-
-  addFooter();
 
   // =====================================================
   // INVENTORY DETAILS
@@ -326,6 +499,36 @@ export async function exportInventoryToPDF(
   addPageHeader(
     "Inventory Details"
   );
+
+  // -----------------------------------------------------
+  // ALPHABETICAL SORT
+  // -----------------------------------------------------
+  //
+  // Sort by item name before sending the data to
+  // AutoTable. localeCompare gives a much cleaner
+  // alphabetical ordering than relying on database order.
+  //
+  // -----------------------------------------------------
+
+  const sortedInventory =
+    [
+      ...data.inventoryDetails,
+    ].sort(
+      (a, b) =>
+        pdfSafeText(
+          a.name
+        ).localeCompare(
+          pdfSafeText(
+            b.name
+          ),
+          undefined,
+          {
+            sensitivity:
+              "base",
+            numeric: true,
+          }
+        )
+    );
 
   autoTable(doc, {
     startY: 32,
@@ -344,19 +547,55 @@ export async function exportInventoryToPDF(
       "Expiry",
     ]],
 
-    body: data.inventoryDetails.map(
+    // ---------------------------------------------------
+    // SORTED + PDF-SAFE DATA
+    // ---------------------------------------------------
+
+    body: sortedInventory.map(
       (item) => [
-        item.name,
-        item.category,
-        item.supplier,
-        String(item.quantity),
-        String(item.minimumStock),
-        item.unit,
-        item.status,
-        item.storageLocation,
-        item.openedStatus,
-        item.batch,
-        item.expiry,
+        pdfSafeText(
+          item.name
+        ),
+
+        pdfSafeText(
+          item.category
+        ),
+
+        pdfSafeText(
+          item.supplier
+        ),
+
+        String(
+          item.quantity
+        ),
+
+        String(
+          item.minimumStock
+        ),
+
+        pdfSafeText(
+          item.unit
+        ),
+
+        pdfSafeText(
+          item.status
+        ),
+
+        pdfSafeText(
+          item.storageLocation
+        ),
+
+        pdfSafeText(
+          item.openedStatus
+        ),
+
+        pdfSafeText(
+          item.batch
+        ),
+
+        pdfSafeText(
+          item.expiry
+        ),
       ]
     ),
 
@@ -364,85 +603,149 @@ export async function exportInventoryToPDF(
 
     styles: {
       font: "helvetica",
+
       fontSize: 7.2,
-      textColor: darkText,
+
+      textColor:
+        darkText,
+
       cellPadding: 2.5,
-      lineColor: lightBorder,
+
+      lineColor:
+        lightBorder,
+
       lineWidth: 0.2,
+
       valign: "middle",
+
+      overflow: "linebreak",
+
+      cellWidth:
+        "wrap",
     },
 
     headStyles: {
       fillColor: navy,
-      textColor: [255, 255, 255],
-      fontStyle: "bold",
+
+      textColor: [
+        255,
+        255,
+        255,
+      ],
+
+      fontStyle:
+        "bold",
+
       fontSize: 7.2,
+
       halign: "left",
+
+      valign: "middle",
     },
 
     alternateRowStyles: {
-      fillColor: lightBackground,
+      fillColor:
+        lightBackground,
     },
+
+    // ---------------------------------------------------
+    // COLUMN WIDTHS
+    // ---------------------------------------------------
+    //
+    // The Item column is slightly wider and is explicitly
+    // configured to wrap. This prevents long names from
+    // visually running into the Status column.
+    //
+    // ---------------------------------------------------
 
     columnStyles: {
       0: {
-        cellWidth: 34,
+        cellWidth: 40,
+        overflow: "linebreak",
       },
+
       1: {
         cellWidth: 25,
+        overflow: "linebreak",
       },
+
       2: {
         cellWidth: 35,
+        overflow: "linebreak",
       },
+
       3: {
         cellWidth: 23,
         halign: "right",
       },
+
       4: {
         cellWidth: 23,
         halign: "right",
       },
+
       5: {
         cellWidth: 18,
+        overflow: "linebreak",
       },
+
       6: {
         cellWidth: 27,
+        overflow: "linebreak",
       },
+
       7: {
-        cellWidth: 48,
+        cellWidth: 45,
+        overflow: "linebreak",
       },
+
       8: {
         cellWidth: 28,
+        overflow: "linebreak",
       },
+
       9: {
-        cellWidth: 28,
+        cellWidth: 25,
+        overflow: "linebreak",
       },
+
       10: {
         cellWidth: 23,
+        overflow: "linebreak",
       },
     },
 
-    didParseCell: (hookData) => {
-      if (
-        hookData.section === "body" &&
-        hookData.column.index === 6
-      ) {
-        const status =
-          String(hookData.cell.raw);
+    didParseCell:
+      (hookData) => {
+        if (
+          hookData.section ===
+            "body" &&
+          hookData.column.index ===
+            6
+        ) {
+          const status =
+            String(
+              hookData.cell.raw
+            );
 
-        const style =
-          getStatusStyle(status);
+          const style =
+            getStatusStyle(
+              status
+            );
 
-        hookData.cell.styles.fillColor =
-          style.fill;
+          hookData.cell.styles.fillColor =
+            style.fill;
 
-        hookData.cell.styles.textColor =
-          style.text;
+          hookData.cell.styles.textColor =
+            style.text;
 
-        hookData.cell.styles.fontStyle =
-          "bold";
-      }
-    },
+          hookData.cell.styles.fontStyle =
+            "bold";
+
+          hookData.cell.styles.overflow =
+            "linebreak";
+        }
+      },
 
     margin: {
       left: 14,
@@ -463,6 +766,7 @@ export async function exportInventoryToPDF(
     page++
   ) {
     doc.setPage(page);
+
     addFooter();
   }
 

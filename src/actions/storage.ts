@@ -1,210 +1,113 @@
 "use server";
 
-/*
-  STORAGE LOCATION ACTIONS
-
-  This file contains all database operations
-  related to storage locations.
-
-  Used by:
-  - StorageManager component
-
-  Functions:
-
-  createStorageLocation()
-    Adds a new freezer/fridge/shelf/room location.
-
-  updateStorageLocation()
-    Updates existing storage information.
-
-  deleteStorageLocation()
-    Removes a storage location.
-
-*/
-
-
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+/*
+  STORAGE LOCATION ACTIONS
 
+  Used by:
+  - StorageManager
 
-
-
-
+  Functions:
+  - createStorageLocation()
+  - updateStorageLocation()
+  - deleteStorageLocation()
+*/
 
 
 /*
   CREATE STORAGE LOCATION
-
-  Required:
-  - name
-
-  Optional:
-  - type
-  - temperature
-
-  Examples:
-
-  Name:
-  "Main Cell Culture Fridge"
-
-  Type:
-  "Fridge"
-
-  Temperature:
-  "4°C"
-
 */
 
-
 export async function createStorageLocation(
-formData:FormData
-){
+  formData: FormData
+) {
+  const name = String(formData.get("name") ?? "").trim();
 
+  if (!name) {
+    throw new Error("Storage location name is required.");
+  }
 
-const name =
-String(formData.get("name"))
-.trim();
+  const type =
+    String(formData.get("type") ?? "").trim() || null;
 
+  const temperature =
+    String(formData.get("temperature") ?? "").trim() || null;
 
+  await prisma.storageLocation.create({
+    data: {
+      name,
+      type,
+      temperature,
+    },
+  });
 
-if(!name)
-return;
-
-
-
-await prisma.storageLocation.create({
-
-data:{
-
-
-name,
-
-
-type:
-String(formData.get("type") || "")
-|| null,
-
-
-temperature:
-String(formData.get("temperature") || "")
-|| null,
-
-
+  revalidatePath("/storage");
 }
-
-});
-
-
-
-revalidatePath("/storage");
-
-
-}
-
-
-
-
-
-
-
 
 
 /*
   UPDATE STORAGE LOCATION
-
-  Updates an existing storage entry.
 */
 
-
 export async function updateStorageLocation(
-formData:FormData
-){
+  formData: FormData
+) {
+  const id = String(formData.get("id") ?? "").trim();
 
+  if (!id) {
+    throw new Error("Storage location ID is required.");
+  }
 
-const id =
-String(formData.get("id"));
+  const name = String(formData.get("name") ?? "").trim();
 
+  if (!name) {
+    throw new Error("Storage location name is required.");
+  }
 
+  const type =
+    String(formData.get("type") ?? "").trim() || null;
 
-if(!id)
-return;
+  const temperature =
+    String(formData.get("temperature") ?? "").trim() || null;
 
+  await prisma.storageLocation.update({
+    where: {
+      id,
+    },
+    data: {
+      name,
+      type,
+      temperature,
+    },
+  });
 
-
-await prisma.storageLocation.update({
-
-where:{
-id
-},
-
-
-data:{
-
-
-name:
-String(formData.get("name"))
-.trim(),
-
-
-
-type:
-String(formData.get("type") || "")
-|| null,
-
-
-
-temperature:
-String(formData.get("temperature") || "")
-|| null,
-
-
+  revalidatePath("/storage");
 }
-
-
-});
-
-
-
-revalidatePath("/storage");
-
-
-}
-
-
-
-
-
-
-
 
 
 /*
   DELETE STORAGE LOCATION
 
-  Removes a storage location.
+  Deletes a storage location by ID.
 
-  Inventory items should have optional
-  storageId, so deletion will only work
-  if Prisma relations allow it.
+  The UI should confirm the deletion before
+  calling this action.
 */
 
-
 export async function deleteStorageLocation(
-id:string
-){
+  id: string
+) {
+  if (!id) {
+    throw new Error("Storage location ID is required.");
+  }
 
+  await prisma.storageLocation.delete({
+    where: {
+      id,
+    },
+  });
 
-await prisma.storageLocation.delete({
-
-where:{
-id
-}
-
-});
-
-
-revalidatePath("/storage");
-
-
+  revalidatePath("/storage");
 }
